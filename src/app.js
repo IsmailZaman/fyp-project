@@ -13,7 +13,7 @@ app.use(express.json())
 
 
 
-
+app.use(userRouter)
 app.use('/departments',departmentRouter)
 app.use('/programs',programRouter)
 app.use('/courses',courseDataRouter)
