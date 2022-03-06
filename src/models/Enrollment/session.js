@@ -18,6 +18,11 @@ const sessionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    enrollmentPeriod:{
+        type: Date,
+        required: true
+
+    },
     coursesOffered:[
         {
             type: mongoose.Schema.Types.ObjectId

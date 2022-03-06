@@ -9,6 +9,7 @@ const offeredCourseSchema = new mongoose.Schema({
     name:{
         type: String,
         unique: true,
+        lowercase: true,
         ref: 'courseData'
     },
     createdBy:{
@@ -22,38 +23,15 @@ const offeredCourseSchema = new mongoose.Schema({
             ref: 'User'
         }
     ],
-    session:{
+    Session:{
         type: String,
         ref: 'session',
-        required: true
+        lowercase: true
     }
 },{timestamps:true})
 
 
 
-
-
-offeredCourseSchema.pre('save',async function(next){
-    const {name, session} = this
-
-    //Verifying the course and session from their respective tables
-    try{
-        const courseVerify = await courseData.findOne({"name":name})
-        const sessionVerify = await Session.findOne({"name": session})
-
-
-        if(!courseVerify || !sessionVerify){
-            throw new Error("Either course or session does not exist")
-        }
-        sessionVerify.coursesOffered.push(this._id)
-        await sessionVerify.save()
-
-    }catch(e){
-        console.log(e)
-    }
-
-    next()
-})
 
 
 

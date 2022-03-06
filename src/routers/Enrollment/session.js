@@ -9,9 +9,8 @@ const courseData = require('../../models/courseData')
 router.post('/',auth,authrole('admin'), async (req,res)=>{
 
     req.body["createdBy"] = req.user._id
+    req.body["enrollmentPeriod"] = new Date(req.body["enrollmentPeriod"])
     newSession = new Session(req.body)
-    
-
 
     try{
         await newSession.save()
@@ -20,6 +19,26 @@ router.post('/',auth,authrole('admin'), async (req,res)=>{
         console.log(e)
         res.status(400).send()
     }
+})
+
+
+router.get('/', auth,authrole('admin'), async(req,res)=>{
+
+
+    try{    
+        const session = await Session.findOne({"name": req.body.name})
+        if(!session){
+            throw new Error("Session not found")
+        }
+        res.send(session)
+
+    }catch(e){
+
+        res.status(404).send(e)
+
+
+    }
+
 })
 
 
