@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const studentData = require('../models/studentData')
 const jwt = require('jsonwebtoken');
 
 
@@ -6,7 +7,8 @@ const jwt = require('jsonwebtoken');
 const userSchema = new mongoose.Schema({
     name:{
         type: String,
-        required: true
+        required: true,
+        lowercase:true
     },
     password:{
         type:String,
@@ -15,7 +17,8 @@ const userSchema = new mongoose.Schema({
     email: {
         type:String,
         required: true,
-        unique: true
+        unique: true,
+        lowercase:true
     },
     role:{
         type:String
@@ -65,10 +68,12 @@ userSchema.methods.toJSON = function(){
 
     const userObject = user.toObject()
 
-    delete userObject.password
+    //delete userObject.password
     delete userObject.tokens
     return userObject
 }
+
+
 
 
 const User = mongoose.model('User', userSchema)

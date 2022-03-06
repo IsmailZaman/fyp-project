@@ -5,6 +5,7 @@ const studentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    //semester info(array)
     createdBy:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

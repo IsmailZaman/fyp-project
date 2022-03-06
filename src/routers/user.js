@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const User = require('../models/user')
 const studentData = require('../models/studentData')
-
 const auth = require('../middleware/auth').auth
 const authrole = require('../middleware/auth').authrole
 
@@ -125,8 +124,63 @@ router.post('/users/logoutall',auth,async(req,res)=>{
     }
 })
 
+//Student can change their passwords while logged in
+router.patch('/users/changepassword',auth,async(req,res)=>{
+    const _id = req.params.id
+    try{
+        
 
+        const pass= await User.findOneAndUpdate({_id}, {$set:{password:req.body.password}},{useFindAndModify: false});
+        res.send(pass)
 
+    }
+    catch(e)
+    {
+        res.status(404).send()
+        console.log("Password can't be changed")
+        
+
+    }
+
+})
+
+//Admin can change Student Data(name, password, email)
+//Find by email?
+router.patch('/users/updateStudentData',auth,authrole("admin"),async(req,res)=>{
+    
+    //let fieldsToUpdate = req.body.toUpdate
+    try{
+    const std=await User.findOneAndUpdate({email:req.body.email},{"$set": { name: req.body.name,  password: req.body.password, email:req.body.em }},{useFindAndModify: false});
+    res.send("Successful")
+    }
+    catch(e)
+    {
+    res.status(404).send()
+    console.log("Data can't be changed")
+    }      
+})
+//Delete a user
+router.delete('/users/deleteUser',auth,authrole("admin"),async(req,res)=>
+{
+    try{
+        //const user = await User.findOneAndDelete({email:req.body.email})
+        const user = await User.findOne({email:req.body.email})
+        if(!user){
+            throw new Error("User not found")
+        }
+        const deletedUser = await User.findByIdAndDelete(user._id)
+        console.log(deletedUser)
+        const deleteUserData = await studentData.findByIdAndDelete(deletedUser.studentData)
+        console.log(deleteUserData)
+
+        res.send("Deleted")
+    }
+    catch(e)
+    {
+        res.status(404).send()
+        console.log("User can't be deleted")
+    }
+})
 
 
 
