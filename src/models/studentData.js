@@ -3,13 +3,22 @@ const mongoose = require("mongoose");
 const studentSchema = new mongoose.Schema({
     rollNumber:{
         type: String,
-        required: true
+        required: true,
+        lowercase: true
     },
-    //semester info(array)
+    
     createdBy:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    }
+    },
+
+    //semester info(array)
+    semesterList:[
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'studentSemester'
+        }
+    ]
 })
 
 

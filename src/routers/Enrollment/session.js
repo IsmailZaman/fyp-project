@@ -10,6 +10,7 @@ router.post('/',auth,authrole('admin'), async (req,res)=>{
 
     req.body["createdBy"] = req.user._id
     req.body["enrollmentPeriod"] = new Date(req.body["enrollmentPeriod"])
+    req.body["status"] = true
     newSession = new Session(req.body)
 
     try{

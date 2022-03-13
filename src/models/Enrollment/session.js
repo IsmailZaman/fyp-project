@@ -23,9 +23,14 @@ const sessionSchema = new mongoose.Schema({
         required: true
 
     },
+    status:{
+        type: Boolean,
+        required: true
+    },
     coursesOffered:[
         {
-            type: mongoose.Schema.Types.ObjectId
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'offeredCourse'
         }
     ]
 

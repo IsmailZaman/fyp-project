@@ -6,6 +6,6 @@ app.get('/', (req,res)=>{
 })
 
 
-app.listen(5000, ()=>{
-    console.log("App is up on ", 5000)
+app.listen(3000, ()=>{
+    console.log("App is up on ", 3000)
 })

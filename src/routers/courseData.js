@@ -28,7 +28,7 @@ router.post('/',auth,authrole('admin'),async(req,res)=>{
         res.send(200)
 
     }catch(e){
-        res.status(404).send(e)
+        res.status(404).send()
 
 
     }
