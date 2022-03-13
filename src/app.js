@@ -1,9 +1,9 @@
 const express = require('express')
 const mongoose = require('./db/mongoose')
 const userRouter = require('./routers/user')
-const departmentRouter = require('./routers/department')
-const programRouter = require('./routers/program')
-const courseDataRouter = require('./routers/courseData')
+const departmentRouter = require('./routers/administration/department')
+const programRouter = require('./routers/administration/program')
+const courseDataRouter = require('./routers/administration/courseData')
 
 const sessionRouter = require('./routers/Enrollment/session')
 const offeredCourseRouter = require('./routers/Enrollment/offeredCourse')

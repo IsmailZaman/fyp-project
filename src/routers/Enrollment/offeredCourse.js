@@ -2,11 +2,11 @@ const router = require('express').Router()
 const auth = require('../../middleware/auth').auth
 const authrole = require('../../middleware/auth').authrole
 const offeredCourse = require('../../models/Enrollment/offeredCourse')
-const courseData =require('../../models/courseData')
+const courseData =require('../../models/administration/courseData')
 const Session = require('../../models/Enrollment/session')
 const User = require('../../models/user')
-const studentSemester = require('../../models/studentSemester')
-const studentData = require('../../models/studentData')
+const studentSemester = require('../../models/student/studentSemester')
+const studentData = require('../../models/student/studentData')
 
 
 
@@ -59,7 +59,8 @@ router.post('/',auth,authrole('admin'), async(req,res)=>{
 
 
     }catch(e){
-        res.status(404).send(e)
+        console.log(e)
+        res.status(404).send()
     }
 
 })

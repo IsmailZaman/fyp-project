@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const studentData = require('../models/studentData')
+const studentData = require('./student/studentData')
 const jwt = require('jsonwebtoken');
 
 

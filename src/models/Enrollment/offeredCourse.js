@@ -1,6 +1,6 @@
 const res = require('express/lib/response')
 const mongoose = require('mongoose')
-const courseData = require('../courseData')
+const courseData = require('../administration/courseData')
 const Session = require('./session')
 
 
@@ -8,7 +8,6 @@ const Session = require('./session')
 const offeredCourseSchema = new mongoose.Schema({
     name:{
         type: String,
-        unique: true,
         lowercase: true,
         ref: 'courseData'
     },

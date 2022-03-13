@@ -1,8 +1,8 @@
 const router = require('express').Router()
-const auth = require('../middleware/auth').auth
-const authrole = require('../middleware/auth').authrole
-const courseData = require('../models/courseData')
-const Department = require('../models//department')
+const auth = require('../../middleware/auth').auth
+const authrole = require('../../middleware/auth').authrole
+const courseData = require('../../models/administration/courseData')
+const Department = require('../../models/administration/department')
 
 
 

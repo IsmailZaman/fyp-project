@@ -1,8 +1,8 @@
-const Program = require('../models/program')
-const Department = require('../models/department')
+const Program = require('../../models/administration/program')
+const Department = require('../../models/administration/department')
 const router = require('express').Router()
-const auth = require('../middleware/auth').auth
-const authrole = require('../middleware/auth').authrole
+const auth = require('../../middleware/auth').auth
+const authrole = require('../../middleware/auth').authrole
 
 
 
