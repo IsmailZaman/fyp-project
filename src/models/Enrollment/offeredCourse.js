@@ -26,7 +26,7 @@ const offeredCourseSchema = new mongoose.Schema({
         type: String,
         ref: 'session',
         lowercase: true
-    }
+    }   
 },{timestamps:true})
 
 
