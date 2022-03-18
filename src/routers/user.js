@@ -16,7 +16,7 @@ router.post('/users', async (req,res)=>{
         res.send({newUser,token})
     }catch(e){
         console.log(e)
-        res.status(400).send(e)
+        res.status(400).send()
     }
 })
 
@@ -55,7 +55,7 @@ router.post('/users/student', auth, authrole("admin"), async(req,res)=>{
         res.send(newUser)
 
     }catch(e){
-        res.status(400).send(e)
+        res.status(400).send()
     }
 })
 

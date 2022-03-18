@@ -27,14 +27,15 @@ router.post('/',auth,authrole('admin'),async(req,res)=>{
         const newProgram = new Program(req.body)
         await newProgram.save()
 
-        dept.programs.push(program._id)
+        dept.programs.push(newProgram._id)
         await dept.save()
 
         
         res.send(newProgram)
 
     }catch(e){
-        res.status(400).send(e)
+        console.log(e)
+        res.status(400).send()
     }
 })
 

@@ -33,7 +33,10 @@ router.post('/',auth,authrole('admin'), async(req,res)=>{
         }
      
         
-        const sessionVerify = await Session.findOne({"name": newCourse.Session})
+        const sessionVerify = await Session.findOne({"name": newCourse.Session, "status": true})
+        if(!sessionVerify){
+            throw new Error("No active session of this name found")
+        }
 
         sessionVerify["coursesOffered"].push(newCourse._id)
 
@@ -110,6 +113,7 @@ router.post('/enroll', auth, async(req,res)=>{
     console.log("hello")
 
     let newCourse=""
+    let courseFound = false
     const studentUser = await User.findById(req.user._id) //contains the user credintials etc
     const student = await studentData.findById(studentUser.studentData).populate('semesterList').exec() // contains the student data
 
@@ -135,7 +139,7 @@ router.post('/enroll', auth, async(req,res)=>{
 
         for(course of activeSession.coursesOffered){
             if(course["name"] === req.body.name){
-                console.log("Found course")
+                courseFound = true
 
                 if(course["enrolledStudents"].includes(student._id)){
                     throw new Error("Already enrolled");
@@ -150,6 +154,11 @@ router.post('/enroll', auth, async(req,res)=>{
             }
             
         }
+
+        if(!courseFound){
+            throw new Error("Course does not exist")
+        }
+
         //Enroll the student in the course if all the checks are passed
 
         //Add enrollment info in student's data too

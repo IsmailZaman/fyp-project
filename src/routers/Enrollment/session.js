@@ -33,8 +33,6 @@ router.post('/',auth,authrole('admin'), async (req,res)=>{
 
 
 router.get('/', auth,authrole('admin'), async(req,res)=>{
-
-
     try{    
         const session = await Session.findOne({"name": req.body.name})
         if(!session){
@@ -44,11 +42,10 @@ router.get('/', auth,authrole('admin'), async(req,res)=>{
 
     }catch(e){
 
-        res.status(404).send(e)
+        res.status(404).send()
 
 
     }
-
 })
 
 
@@ -68,6 +65,8 @@ router.patch('/finish/:name',auth,authrole('admin'), async(req,res)=>{
         //Update the session status
         session.status = false;
         await session.save()
+
+        console.log("Here")
         res.send("Successfully finishes the session")
     }catch(e){
         res.status(404).send()
