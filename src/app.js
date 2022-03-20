@@ -1,5 +1,6 @@
 const express = require('express')
 const mongoose = require('./db/mongoose')
+const cors = require('cors')
 const userRouter = require('./routers/user')
 const departmentRouter = require('./routers/administration/department')
 const programRouter = require('./routers/administration/program')
@@ -9,6 +10,7 @@ const sessionRouter = require('./routers/Enrollment/session')
 const offeredCourseRouter = require('./routers/Enrollment/offeredCourse')
 
 const app = express()
+app.use(cors())
 app.use(express.json())
 
 
