@@ -19,14 +19,15 @@ const auth = async(req,res,next)=>{
 
 
     }catch(e){
-        res.status(404).send("Please Authenticate")
+        res.status(401).send("Please Authenticate")
     }
 }
 
 const authrole = function(role){
 
     return (req,res,next)=>{
-        if(role !== req.user.role){
+        
+        if(!req.user.roles.includes(role)){
             res.status(401).send('Not Allowed')
         }
         next() 

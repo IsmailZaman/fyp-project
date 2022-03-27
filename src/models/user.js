@@ -20,9 +20,7 @@ const userSchema = new mongoose.Schema({
         unique: true,
         lowercase:true
     },
-    role:{
-        type:String
-    },
+    roles:[String],
 
     tokens:[{
         token:{
@@ -68,7 +66,7 @@ userSchema.methods.toJSON = function(){
 
     const userObject = user.toObject()
 
-    //delete userObject.password
+    delete userObject.password
     delete userObject.tokens
     return userObject
 }

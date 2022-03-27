@@ -10,7 +10,7 @@ const authrole = require('../middleware/auth').authrole
 router.post('/users', async (req,res)=>{
     
     const newUser = new User(req.body)
-    newUser["role"] = "admin"
+    newUser['roles'].push('admin')
     try{
         const token = await newUser.generateAuthToken();
         res.send({newUser,token})
@@ -46,7 +46,7 @@ router.post('/users/student', auth, authrole("admin"), async(req,res)=>{
 
     const newUser = new User(req.body.userData)
     newUser["studentData"] = student._id
-    newUser["role"] = "student"
+    newUser['roles'].push('student')
 
 
     try{
