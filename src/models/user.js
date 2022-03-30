@@ -38,12 +38,13 @@ const userSchema = new mongoose.Schema({
 
 userSchema.methods.generateAuthToken = async function(){
     const user =this;
-    const token = jwt.sign({_id: user._id.toString()}, "mysecret",{expiresIn: '24h'})
+    const accessToken = jwt.sign({_id: user._id.toString()}, "mysecret",{expiresIn: '30s'})
     
-    user.tokens = user.tokens.concat({token})
+    const refreshToken = jwt.sign({_id: user._id.toString()}, "refreshSecret",{expiresIn: '1d'}) // this is the refresh token
+    user.tokens = user.tokens.concat({token: refreshToken})
     
     await user.save()
-    return token
+    return {accessToken, refreshToken}
 }
 
 

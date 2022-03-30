@@ -15,7 +15,6 @@ router.post('/users', async (req,res)=>{
         const token = await newUser.generateAuthToken();
         res.send({newUser,token})
     }catch(e){
-        console.log(e)
         res.status(400).send()
     }
 })
@@ -29,8 +28,9 @@ router.post('/users/login',async(req,res)=>{
     
     try{
         const user = await User.findByCredentials(req.body.email, req.body.password)
-        const token = await user.generateAuthToken()
-        res.send({user,token})
+        const {accessToken, refreshToken} = await user.generateAuthToken()
+        res.cookie('jwt', refreshToken, {httpOnly: true,secure:false,maxAge: 24*60*60*1000})
+        res.json({accessToken,user})
 
     }catch(e){
         res.status(400).send()
@@ -73,7 +73,6 @@ router.get('/users/me',auth,async(req,res)=>{
         }
         else{
             const user = await User.findById({_id: req.user._id}).populate('studentData')
-            console.log(user)
             res.send(user)
         }
         
@@ -100,13 +99,28 @@ router.get('/users',auth,authrole("admin"),async(req,res)=>{
 
 //Logs out a user, irrespective of his role
 router.post('/users/logout', auth, async(req,res)=>{
+    const cookies = req.cookies
+    if(!cookies?.jwt){
+        return res.sendStatus(204) //no content to send
+    }
+    const refreshToken = cookies.jwt
+
     try{
-        req.user.tokens = req.user.tokens.filter((token)=>{
-            return token.token !== req.token
+        const user = await User.findOne({'tokens.token': refreshToken})
+        if(!user){
+            res.clearCookie('jwt',{httpOnly: true,maxAge: 24*60*60*1000})
+            res.sendStatus(204)
+        }
+        
+        user.tokens = user.tokens.filter((token)=>{
+            return token.token !== refreshToken
         })
 
-        await req.user.save()
-        res.send()
+        await user.save()
+        res.clearCookie('jwt',{httpOnly: true,maxAge: 24*60*60*1000})
+
+
+        res.sendStatus(204)
     }catch(e){
         res.status(500).send()
     }
@@ -116,8 +130,10 @@ router.post('/users/logout', auth, async(req,res)=>{
 //Logs out a user from all instances. Removes all tokens
 router.post('/users/logoutall',auth,async(req,res)=>{
     try{
+        
         req.user.tokens = []
         await req.user.save()
+        res.clearCookie('jwt',{httpOnly: true,maxAge: 24*60*60*1000})
         res.send()
     }catch(e){
         res.status(500).send()
