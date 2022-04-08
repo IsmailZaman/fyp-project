@@ -28,8 +28,12 @@ router.post('/users/login',async(req,res)=>{
     
     try{
         const user = await User.findByCredentials(req.body.email, req.body.password)
+        if(user.tokens.length > 10){
+            user.tokens = []
+        }
         const {accessToken, refreshToken} = await user.generateAuthToken()
-        res.cookie('jwt', refreshToken, {httpOnly: true,secure:false,maxAge: 24*60*60*1000})
+        res.cookie('jwt', refreshToken, {httpOnly: true,maxAge: 24*60*60*1000})
+        //,secure:true, sameSite: 'none'
         res.json({accessToken,user})
 
     }catch(e){
@@ -99,6 +103,7 @@ router.get('/users',auth,authrole("admin"),async(req,res)=>{
 
 //Logs out a user, irrespective of his role
 router.post('/users/logout', auth, async(req,res)=>{
+    console.log("Entered Logout")
     const cookies = req.cookies
     if(!cookies?.jwt){
         return res.sendStatus(204) //no content to send
@@ -118,8 +123,6 @@ router.post('/users/logout', auth, async(req,res)=>{
 
         await user.save()
         res.clearCookie('jwt',{httpOnly: true,maxAge: 24*60*60*1000})
-
-
         res.sendStatus(204)
     }catch(e){
         res.status(500).send()

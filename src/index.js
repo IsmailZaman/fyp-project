@@ -1,4 +1,5 @@
 const app =require('./app')
+const PORT = process.env.PORT
 
 
 app.get('/', (req,res)=>{
@@ -6,6 +7,6 @@ app.get('/', (req,res)=>{
 })
 
 
-app.listen(3000, ()=>{
-    console.log("App is up on ", 3000)
+app.listen(PORT, ()=>{
+    console.log("App is up on ", PORT)
 })

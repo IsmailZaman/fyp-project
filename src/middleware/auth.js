@@ -8,7 +8,7 @@ const auth = async(req,res,next)=>{
             throw new Error('token ')
         }
 
-        const decoded = jwt.verify(token,"mysecret")
+        const decoded = jwt.verify(token,process.env.ACCESS_SECRET)
 
         const user = await User.findOne({_id: decoded._id})
 

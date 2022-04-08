@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express')
 const mongoose = require('./db/mongoose')
 const cors = require('cors')
@@ -15,8 +16,9 @@ const app = express()
 //app.use("*",cors())
 app.use(cors({
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    origin: ['http://localhost:3000', 'http://localhost:5000']
+    allowedHeaders: ['Content-Type', 'Authorization','x-csrf-token'],
+    origin: ['http://localhost:3000', 'http://localhost:5000'],
+    exposedHeaders: ['*', 'Authorization','Set-Cookie' ]  
 }));
 app.use(express.json())
 app.use(cookieParser())
