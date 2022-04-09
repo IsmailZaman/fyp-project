@@ -4,6 +4,7 @@ const User = require('../models/user')
 
 
 const handleResfreshToken = async(req,res)=>{
+    
     const cookies = req.cookies
     if(!cookies?.jwt) res.sendStatus(401)
 
@@ -15,14 +16,14 @@ const handleResfreshToken = async(req,res)=>{
             return
             
         }
-        const decoded = jwt.verify(refreshToken, 'refreshSecret')
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET)
 
         if(decoded._id != user._id.toString()){
             return
             
         }
         
-        const accessToken = jwt.sign({_id: user._id.toString()}, "mysecret",{expiresIn: '30s'})
+        const accessToken = jwt.sign({_id: user._id.toString()}, process.env.ACCESS_SECRET,{expiresIn: '30s'})
         const roles = user.roles
         
         return res.json({accessToken, roles})
