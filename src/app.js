@@ -11,6 +11,7 @@ const courseDataRouter = require('./routers/administration/courseData')
 const sessionRouter = require('./routers/Enrollment/session')
 const offeredCourseRouter = require('./routers/Enrollment/offeredCourse')
 const refreshRouter = require('./routers/handleRefresh')
+const studentRouter = require('./routers/administration/studentData')
 
 const app = express()
 //app.use("*",cors())
@@ -34,6 +35,7 @@ app.use('/courses',courseDataRouter)
 //Enrollment routers
 app.use('/session',sessionRouter)
 app.use('/offeredCourse', offeredCourseRouter)
+app.use('/students', studentRouter)
 
 
 module.exports=app
