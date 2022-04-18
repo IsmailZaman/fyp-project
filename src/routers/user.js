@@ -68,9 +68,9 @@ router.post('/users/onestudent', auth, authrole("admin"), async(req,res)=>{
 //Request for creating many students. Endpoint will receive a prefix, initial value and then create account accordingly. 
 
 router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
-    const {prefix, initial, final} = req.body
-    const range = final - initial
     
+    const {prefix, initial, final} = req.body
+    const range = (final - initial)
 
     const passwords = generator.generateMultiple(range+1, {
         length: 6,
@@ -82,14 +82,14 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
     const studentDataList = []
     const emailList = []
     for(let i =0; i<= range; i++){
-        let currentRollNumber = prefix+(initial + i)
-
+        let currentRollNumber = prefix+(parseInt(initial) + i)
+        
 
         let student = new studentData({rollNumber: currentRollNumber})
         student["createdBy"] = req.user._id
 
         let newUser = new User({
-            email: `${prefix}${initial+i}@itu.edu.pk`,
+            email: `${currentRollNumber}@itu.edu.pk`,
             password: passwords[i]
         })
         newUser["studentData"] = student._id
@@ -104,7 +104,7 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
     try{
         await User.insertMany(studentList)
         await studentData.insertMany(studentDataList)
-        res.send("created " + range + 1 + " students")
+        res.send("created " + (range + 1) + " students")
         
         // for(let i=0;i<emailList.length;i++){
         //     const mail = {
