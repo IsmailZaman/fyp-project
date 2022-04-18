@@ -24,6 +24,37 @@ router.get('/',auth,authrole('admin') ,async(req,res)=>{
     }
 })
 
+//Return student data by id
+router.get('/:id', auth,authrole('admin'),async(req,res)=>{
+    const _id = req.params.id 
+    console.log( _id)
+    
+    try{
+        const user = await User.findById(_id).populate('studentData')
+        if(!user){
+          return res.status(404).send()
+       }
 
+       res.send(user)
+    }
+    catch(e)
+    {
+        console.log(req.params)
+    }
+   
+})
+//Update student or user data
+router.patch('/update/:id',auth,authrole("admin"),async(req,res)=>{
+    const _id = req.params.id 
+    try{    
+      const user = await studentData.findByIdAndUpdate(_id,{"$set":{rollNumber:req.body.rollNumber}},{new:true});  
+    res.send(user)
+    }
+    catch(e)
+    {
+    res.status(404).send()
+    console.log("Data can't be updated")
+    }      
+})
 
 module.exports = router
