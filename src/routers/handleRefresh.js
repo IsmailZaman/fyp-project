@@ -23,7 +23,7 @@ const handleResfreshToken = async(req,res)=>{
             
         }
         
-        const accessToken = jwt.sign({_id: user._id.toString()}, process.env.ACCESS_SECRET,{expiresIn: 60*15})
+        const accessToken = jwt.sign({_id: user._id.toString()}, process.env.ACCESS_SECRET,{expiresIn: '1h'})
         const roles = user.roles
         
         return res.json({accessToken, roles})

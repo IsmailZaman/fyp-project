@@ -3,6 +3,8 @@ const User = require('../models/user')
 const studentData = require('../models/student/studentData')
 const auth = require('../middleware/auth').auth
 const authrole = require('../middleware/auth').authrole
+const generator = require('generate-password')
+const mailTransport = require('../mailer/mailer')
 
 
 //Registration requests here. A token is generated on registration
@@ -43,7 +45,7 @@ router.post('/users/login',async(req,res)=>{
 
 //Request for creating Students. Only admins can use this route.
 
-router.post('/users/student', auth, authrole("admin"), async(req,res)=>{
+router.post('/users/onestudent', auth, authrole("admin"), async(req,res)=>{
     const student = new studentData(req.body.studentData)
     student["createdBy"] = req.user._id
 
@@ -63,7 +65,69 @@ router.post('/users/student', auth, authrole("admin"), async(req,res)=>{
     }
 })
 
+//Request for creating many students. Endpoint will receive a prefix, initial value and then create account accordingly. 
 
+router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
+    const {prefix, initial, final} = req.body
+    const range = final - initial
+    
+
+    const passwords = generator.generateMultiple(range+1, {
+        length: 6,
+        uppercase: false
+    });
+
+
+    const studentList = []
+    const studentDataList = []
+    const emailList = []
+    for(let i =0; i<= range; i++){
+        let currentRollNumber = prefix+(initial + i)
+
+
+        let student = new studentData({rollNumber: currentRollNumber})
+        student["createdBy"] = req.user._id
+
+        let newUser = new User({
+            email: `${prefix}${initial+i}@itu.edu.pk`,
+            password: passwords[i]
+        })
+        newUser["studentData"] = student._id
+        newUser['roles'].push('student')
+
+        studentList.push(newUser)
+        studentDataList.push(student)
+        emailList.push(`${prefix}${initial+i}@itu.edu.pk`)
+    }
+
+    
+    try{
+        await User.insertMany(studentList)
+        await studentData.insertMany(studentDataList)
+        res.send("created " + range + 1 + " students")
+        
+        // for(let i=0;i<emailList.length;i++){
+        //     const mail = {
+        //         from: process.env.MAILER_EMAIL,
+        //         to: emailList[i],
+        //         subject: 'ITU STUDENT PORTAL ACCESS',
+        //         text: `Dear Student, \n your account has just been created on studentportal.com. Following are your credintials: \n Email: ${emailList[i]} \n Password: ${passwords[i]}`
+        //     };
+        //     console.log("Hello")
+        //     await mailTransport.sendMail(mail)
+        // }
+
+
+
+        
+
+
+    }catch(e){
+        console.log(e)
+        res.status(400).send()
+    }
+
+})
 
 
 
