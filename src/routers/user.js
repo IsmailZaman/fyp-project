@@ -71,6 +71,10 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
     
     const {prefix, initial, final} = req.body
     const range = (final - initial)
+    if(range < 0){
+        res.status(400).send("Incorrect range of roll numbers given")
+        return
+    }
 
     const passwords = generator.generateMultiple(range+1, {
         length: 6,
@@ -102,9 +106,9 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
 
     
     try{
-        await User.insertMany(studentList)
+        const users = await User.insertMany(studentList)
         await studentData.insertMany(studentDataList)
-        res.send("created " + (range + 1) + " students")
+        res.status(200).send("created " + (range + 1) + " students")
         
         // for(let i=0;i<emailList.length;i++){
         //     const mail = {
@@ -124,7 +128,7 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
 
     }catch(e){
         console.log(e)
-        res.status(400).send()
+        res.status(400).send('Unable to add Students')
     }
 
 })
