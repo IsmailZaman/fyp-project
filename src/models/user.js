@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const studentData = require('./student/studentData')
+const advisorData = require('./advisor/advisor')
 const jwt = require('jsonwebtoken');
 
 
@@ -30,6 +31,10 @@ const userSchema = new mongoose.Schema({
     studentData:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'studentData'
+    },
+    advisorData:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:'advisorData'
     }
 
 },{timestamps: true})

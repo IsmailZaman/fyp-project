@@ -12,6 +12,8 @@ const sessionRouter = require('./routers/Enrollment/session')
 const offeredCourseRouter = require('./routers/Enrollment/offeredCourse')
 const refreshRouter = require('./routers/handleRefresh')
 const studentRouter = require('./routers/administration/studentData')
+const advisorRouter = require('./routers/advisor/advisor')
+const requestRouter = require('./routers/Enrollment/requests')
 
 const app = express()
 //app.use("*",cors())
@@ -36,6 +38,8 @@ app.use('/courses',courseDataRouter)
 app.use('/session',sessionRouter)
 app.use('/offeredCourse', offeredCourseRouter)
 app.use('/students', studentRouter)
+app.use('/advisor', advisorRouter)
+app.use('/requests',requestRouter)
 
 
 module.exports=app

@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const User = require('../models/user')
 const studentData = require('../models/student/studentData')
+const advisorData = require('../models/advisor/advisor')
 const auth = require('../middleware/auth').auth
 const authrole = require('../middleware/auth').authrole
 const generator = require('generate-password')
@@ -63,6 +64,27 @@ router.post('/users/onestudent', auth, authrole("admin"), async(req,res)=>{
     }catch(e){
         res.status(400).send()
     }
+})
+//Creating advisor
+router.post('/users/advisor', auth, authrole("admin"), async(req,res)=>{
+    console.log("Advisor request")
+    const advisor = new advisorData(req.body.advisorData)
+
+    const newUser = new User(req.body.userData)
+    newUser["advisorData"] = advisor._id
+    newUser['roles'].push('advisor')
+
+    try{
+        await newUser.save()
+        await advisor.save()
+        res.send(newUser)
+
+    }catch(e){
+        console.log(e)
+        res.status(400).send()
+    }
+
+
 })
 
 //Request for creating many students. Endpoint will receive a prefix, initial value and then create account accordingly. 
