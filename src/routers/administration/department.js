@@ -14,7 +14,7 @@ router.post('/',auth,authrole('admin'),async(req,res)=>{
 
     try{
         await newDepartment.save()
-        res.send(newDepartment)
+        res.status(201).send(`Created ${newDepartment.name} department.`)
 
     }catch(e){
         res.status(400).send(e)
@@ -23,7 +23,17 @@ router.post('/',auth,authrole('admin'),async(req,res)=>{
 
 
 //Gets all the data of a department
-
+router.get('/', auth, async(req,res)=>{
+    try{
+        const depts = await Department.find({}).select('name')
+        if(!depts){
+            throw new Error("Departments not found")
+        }
+        res.send(depts)
+    }catch(e){
+        res.status(404).send()
+    }
+})
 
 
 //that only returns data for one department

@@ -69,7 +69,7 @@ router.post('/users/onestudent', auth, authrole("admin"), async(req,res)=>{
 
 router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
     
-    const {prefix, initial, final} = req.body
+    const {prefix, initial, final,batch,dept} = req.body
     const range = (final - initial)
     if(range < 0){
         res.status(400).send("Incorrect range of roll numbers given")
@@ -89,7 +89,7 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
         let currentRollNumber = prefix+(parseInt(initial) + i)
         
 
-        let student = new studentData({rollNumber: currentRollNumber})
+        let student = new studentData({rollNumber: currentRollNumber, batch,department: dept})
         student["createdBy"] = req.user._id
 
         let newUser = new User({
@@ -108,7 +108,7 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
     try{
         const users = await User.insertMany(studentList)
         await studentData.insertMany(studentDataList)
-        res.status(200).send("created " + (range + 1) + " students")
+        res.status(201).send("created " + (range + 1) + " students")
         
         // for(let i=0;i<emailList.length;i++){
         //     const mail = {

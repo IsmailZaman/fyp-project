@@ -18,7 +18,17 @@ const studentSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'studentSemester'
         }
-    ]
+    ],
+    batch: {
+        type: String,
+        required: true,
+        lowercase: true
+    },
+    department: {
+        type:String,
+        required: true,
+        lowercase: true
+    }
 })
 
 

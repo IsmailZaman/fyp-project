@@ -14,21 +14,20 @@ router.post('/',auth,authrole('admin'),async(req,res)=>{
 
     try{
         const department = await Department.findOne({
-            "name":req.body.department
+            "name":req.body.dept
         })
         if(!department){
             throw new Error("Department not found")
         }
-        console.log(department)
-        console.log(department._id)
+        
         newCourse["department"] = department._id
-        console.log(newCourse)
+        
 
         await newCourse.save({user_id: req.user._id})
-        res.send(200)
+        res.status(201).send(`Created ${newCourse.name}`)
 
     }catch(e){
-        res.status(404).send()
+        res.status(400).send()
 
 
     }
