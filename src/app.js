@@ -36,7 +36,7 @@ app.use('/courses',courseDataRouter)
 
 //Enrollment routers
 app.use('/session',sessionRouter)
-app.use('/offeredCourse', offeredCourseRouter)
+app.use('/offeredcourse', offeredCourseRouter)
 app.use('/students', studentRouter)
 app.use('/advisor', advisorRouter)
 app.use('/requests',requestRouter)

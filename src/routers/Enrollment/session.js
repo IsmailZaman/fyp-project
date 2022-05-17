@@ -10,6 +10,7 @@ const studentSemester = require('../../models/student/studentSemester')
 router.post('/',auth,authrole('admin'), async (req,res)=>{
 
     req.body["createdBy"] = req.user._id
+    console.log(req.body["enrollmentPeriod"])
     req.body["enrollmentPeriod"] = new Date(req.body["enrollmentPeriod"])
     req.body["status"] = true
     const newSession = new Session(req.body)
@@ -27,7 +28,7 @@ router.post('/',auth,authrole('admin'), async (req,res)=>{
         res.send(newSession)
     }catch(e){
         console.log(e)
-        res.status(400).send()
+        res.status(400).send('Unable to add Session')
     }
 })
 
@@ -47,6 +48,41 @@ router.get('/', auth,authrole('admin'), async(req,res)=>{
 
     }
 })
+
+//This request will return all the sessions:
+router.get('/all', auth,authrole('admin'), async(req,res)=>{
+
+    try{    
+        const sessions = await Session.find({})
+        if(!sessions){
+            throw new Error("Session not found")
+        }
+        res.send(sessions)
+    }catch(e){
+
+        res.status(404).send("Session not found")
+    }
+})
+
+//This request will return an active session if it exists
+router.get('/active',auth,authrole('admin'), async(req,res)=>{
+    try{
+        const session = await Session.findOne({"status":true})
+        
+        if(!session){
+            throw new Error("Session not found")
+        }
+
+        res.send(session)
+
+    }catch(e){
+        res.status(404).send()
+
+    }
+})
+
+
+
 
 
 //This request will finish a particular session. We will also update all the semesters that correspond to this session.
@@ -69,7 +105,7 @@ router.patch('/finish/:name',auth,authrole('admin'), async(req,res)=>{
         console.log("Here")
         res.send("Successfully finishes the session")
     }catch(e){
-        res.status(404).send()
+        res.status(400).send('Unable to finish the session')
     }
 
 

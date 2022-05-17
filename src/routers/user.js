@@ -1,7 +1,6 @@
 const router = require('express').Router()
 const User = require('../models/user')
 const studentData = require('../models/student/studentData')
-const advisorData = require('../models/advisor/advisor')
 const auth = require('../middleware/auth').auth
 const authrole = require('../middleware/auth').authrole
 const generator = require('generate-password')
@@ -64,27 +63,6 @@ router.post('/users/onestudent', auth, authrole("admin"), async(req,res)=>{
     }catch(e){
         res.status(400).send()
     }
-})
-//Creating advisor
-router.post('/users/advisor', auth, authrole("admin"), async(req,res)=>{
-    console.log("Advisor request")
-    const advisor = new advisorData(req.body.advisorData)
-
-    const newUser = new User(req.body.userData)
-    newUser["advisorData"] = advisor._id
-    newUser['roles'].push('advisor')
-
-    try{
-        await newUser.save()
-        await advisor.save()
-        res.send(newUser)
-
-    }catch(e){
-        console.log(e)
-        res.status(400).send()
-    }
-
-
 })
 
 //Request for creating many students. Endpoint will receive a prefix, initial value and then create account accordingly. 
@@ -235,18 +213,22 @@ router.post('/users/logoutall',auth,async(req,res)=>{
 
 //Student can change their passwords while logged in
 router.patch('/users/changepassword',auth,async(req,res)=>{
-    const _id = req.params.id
+    const _id = req.user._id
+    console.log(req.body)
     try{
         
+        if(req.body.oldPassword !== req.user.password){
+            throw new Error("Your old password in incorrect")
+        }
 
-        const pass= await User.findOneAndUpdate({_id}, {$set:{password:req.body.password}},{useFindAndModify: false});
+        const pass= await User.findOneAndUpdate({_id}, {$set:{password:req.body.newPassword}},{useFindAndModify: false});
         res.send(pass)
 
     }
     catch(e)
     {
-        res.status(404).send()
-        console.log("Password can't be changed")
+        res.status(400).send("Incorrect Credintials")
+        
         
 
     }

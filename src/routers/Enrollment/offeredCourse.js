@@ -215,6 +215,17 @@ router.post('/enroll', auth, async(req,res)=>{
 })
 
 
+router.get('/', auth,async(req,res)=>{
+    try{
+        const courses = await offeredCourse.find({})
+        if(!courses){
+            throw new Error('Courses not found')
+        }
+        res.send(courses)
+    }catch(e){
+        res.status(404).send('Courses not found')
+    }
+})
 
 
 
