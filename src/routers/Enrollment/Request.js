@@ -4,6 +4,8 @@ const studentData = require('../../models/student/studentData')
 const Request = require('../../models/Enrollment/Request')
 const auth = require('../../middleware/auth').auth
 const authrole = require('../../middleware/auth').authrole
+const Session = require('../../models/Enrollment/session')
+const mongoose = require('mongoose')
 
 //get all requests for a batch
 
@@ -45,16 +47,52 @@ router.get('/pending/:batch', auth, authrole(['admin','advisor']), async(req,res
 router.post('/create', auth,async(req,res)=>{
     
     const request =new Request()
-    request["student"] = req.user._id
-    request["courses"] = req.body.courses
     try{
-        const data = await studentData.findById(req.user.studentData)
-        if(!data){
-            throw new Error('Student data not found')
+        const session = await Session.findOne({status: true})
+        if(!session){
+            throw new Error("Session not found")
         }
-        request["batch"]=data.batch
-        await request.save()
-        res.send(request)
+        const student = await User.findById(req.user._id).populate('studentData')
+        if(!student){
+            throw new Error('student not found')
+        }
+
+
+        const existingRequest = await Request.findOne({session: session.name,student:req.user._id})
+        if(!existingRequest){
+            
+            request['student'] = req.user._id
+            request['session'] = session.name
+            request['courses'] = req?.body?.courses
+            request['batch'] = student?.studentData?.batch
+        }
+        if(existingRequest){
+            
+            const coursesToAdd = []
+            let add = true
+            req?.body?.courses.forEach((course)=>{
+                add = true
+                for(let i =0; i< existingRequest?.courses?.length; i++){
+                    if(existingRequest?.courses[i]?.course.toString() === course.course){
+                        add = false
+                    }
+                }
+                if(add){
+                    coursesToAdd.push(course)
+                }
+            })           
+            existingRequest.courses = [...existingRequest.courses,...coursesToAdd]                                                                                                                                                                                                                                                                                                            
+        }                                                                                                               
+        
+        if(!existingRequest){
+            await request.save()
+            return res.send(request)
+        }
+        if(existingRequest){
+            await existingRequest.save()
+            return res.send(existingRequest)
+        }
+
 
     }catch(e){
         console.log(e)
@@ -62,6 +100,10 @@ router.post('/create', auth,async(req,res)=>{
     }
 
 })
+
+
+
+
 
 //approve request enrollments
 router.patch('/approve/:id', auth,authrole('advisor'), async(req,res)=>{
@@ -78,7 +120,7 @@ router.patch('/approve/:id', auth,authrole('advisor'), async(req,res)=>{
     }
 })
 
-//add courses to request. 
+
 
 //remove courses from a request
 

@@ -41,7 +41,13 @@ const requestSchema = new mongoose.Schema({
     closed:{
         type: mongoose.Schema.Types.Boolean,
         default: false
-    }
+    },
+    session:{
+        type: String,
+        ref: 'session',
+        required: true,
+        lowercase: true
+    }   
    
 
 })

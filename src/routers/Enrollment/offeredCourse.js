@@ -79,7 +79,7 @@ router.post('/add',auth,authrole('admin'), async(req,res)=>{
     async function addNewCourses(courseList){
         let coursesAdded = 0
         let add = true
-        const activeSession = await Session.findOne({active: true}).populate('coursesOffered')
+        const activeSession = await Session.findOne({status: true}).populate('coursesOffered')
 
         for(x in courseList){
             const existingCourse = await courseData.findById(courseList[x])
@@ -283,7 +283,7 @@ router.get('/', auth,async(req,res)=>{
 
 router.get('/active', auth, async(req,res)=>{
     try{
-        const activeSession = await Session.findOne({status: true})
+        const activeSession = await Session.findOne({"status": true})
         if(!activeSession){
             throw new Error("Session not found")
         }
