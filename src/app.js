@@ -13,7 +13,7 @@ const offeredCourseRouter = require('./routers/Enrollment/offeredCourse')
 const refreshRouter = require('./routers/handleRefresh')
 const studentRouter = require('./routers/administration/studentData')
 const advisorRouter = require('./routers/advisor/advisor')
-const requestRouter = require('./routers/Enrollment/requests')
+const requestRouter = require('./routers/Enrollment/Request')
 
 const app = express()
 //app.use("*",cors())

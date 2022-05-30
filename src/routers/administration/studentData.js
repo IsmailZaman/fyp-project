@@ -10,9 +10,8 @@ const authrole = require('../../middleware/auth').authrole
 
 router.get('/',auth,authrole('admin') ,async(req,res)=>{
     try{
-
-        const users = await User.find({roles: 'student'}).populate('studentData')
         
+        const users = await User.find({roles: 'student'}).populate('studentData')
         if(!users){
             throw new error('users not found')
         }

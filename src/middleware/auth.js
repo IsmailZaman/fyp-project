@@ -39,10 +39,21 @@ const auth = async(req,res,next)=>{
 const authrole = function(role){
 
     return (req,res,next)=>{
-        
-        if(!req.user.roles.includes(role)){
-            res.status(401).send('Not Allowed')
+        let found = false
+        if(Array.isArray(role)){
+            for(i in role){
+                if(req.user.roles.includes(role[i])){
+                    found = true
+                }
+            }
         }
+        
+        if(!Array.isArray(role) || found === false){
+            if(!req.user.roles.includes(role)){
+                res.status(401).send('Not Allowed')
+            }
+        }
+        
         next() 
     }
 }

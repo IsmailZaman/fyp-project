@@ -2,20 +2,21 @@ const mongoose = require('mongoose');
 
 const advisorSchema = new mongoose.Schema({
 
-    //batch name
-    batch:{
-        type: String,
-        required:true,
-        lowercase:true,
-    },
-
-    //list of students in the batch
-    batchStudents:[
-        {
-            type:mongoose.Schema.Types.ObjectId,
-            ref: 'studentData'
+    //List of batches he/she has advised
+    batches:[{
+        batch: {
+            type: String,
+            required: true,
+            lowercase: true
+        },
+        session: {
+            type: String,
+            required: true,
+            lowercase: true
         }
-    ]
+    }]
+        
+    
 
 })
 

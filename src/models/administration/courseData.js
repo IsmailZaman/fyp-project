@@ -15,6 +15,10 @@ const courseDataSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    creditHours:{
+        type: Number,
+        required: true
+    },
     department:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Department'

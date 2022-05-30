@@ -7,6 +7,7 @@ const Session = require('../../models/Enrollment/session')
 const User = require('../../models/user')
 const studentSemester = require('../../models/student/studentSemester')
 const studentData = require('../../models/student/studentData')
+const mongoose = require('mongoose')
 
 
 
@@ -25,7 +26,7 @@ router.post('/',auth,authrole('admin'), async(req,res)=>{
     
     //Validating the course name
     try{
-
+        console.log(newCourse)
         const courseVerify = await courseData.findOne({"name": newCourse.name})
        
         if(!courseVerify){
@@ -37,7 +38,7 @@ router.post('/',auth,authrole('admin'), async(req,res)=>{
         if(!sessionVerify){
             throw new Error("No active session of this name found")
         }
-
+        
         sessionVerify["coursesOffered"].push(newCourse._id)
 
         try{
@@ -69,12 +70,66 @@ router.post('/',auth,authrole('admin'), async(req,res)=>{
 })
 
 
+//Takes a list of new offeredCourses. The offered courses must already exist in the courseData table
+
+router.post('/add',auth,authrole('admin'), async(req,res)=>{
+    const courses = req.body.courses
+    console.log(courses)
+
+    async function addNewCourses(courseList){
+        let coursesAdded = 0
+        let add = true
+        const activeSession = await Session.findOne({active: true}).populate('coursesOffered')
+
+        for(x in courseList){
+            const existingCourse = await courseData.findById(courseList[x])
+            add = true
+            if(existingCourse){
+                const newCourse = new offeredCourse()
+                newCourse["createdBy"] = req.user._id
+                newCourse["name"] = existingCourse.name
+                newCourse["Session"] = activeSession.name
+
+                for(course in activeSession.coursesOffered){
+                    if(activeSession.coursesOffered[course].name === newCourse.name){
+                        add = false
+                    }
+                }
+                if(add){
+                    await newCourse.save()
+                    activeSession.coursesOffered.push(newCourse._id)
+                    coursesAdded = coursesAdded + 1
+                }
+            }
+        }
+        await activeSession.save()
+        return coursesAdded
+    }
+
+    
+    try{
+        const activeSession = await Session.findOne({active: true})
+        if(!activeSession){
+            throw new Error('Active Session not found.')
+        }
+
+        const result = await addNewCourses(courses)
+        await activeSession.save()
+        res.send(`${result} courses added.`)
+
+        
+
+    }catch(e){
+        res.status(400).send()
+    }
+
+})
 
 //Deleting an offeredCourse. Should also be removed from the sessions list of courses.
 
 router.delete('/',auth, authrole('admin'), async(req,res)=>{
     try{
-        console.log("hello")
+        
         const deleteCourse = await offeredCourse.findOne({"name": req.body.name, "Session": req.body.session})
 
         if(!deleteCourse){
@@ -119,7 +174,6 @@ router.post('/enroll', auth, async(req,res)=>{
 
 
     try{
-        
         //session check
         const activeSession = await Session.findOne({"status": true}).populate('coursesOffered')
         
@@ -220,6 +274,24 @@ router.get('/', auth,async(req,res)=>{
         const courses = await offeredCourse.find({})
         if(!courses){
             throw new Error('Courses not found')
+        }
+        res.send(courses)
+    }catch(e){
+        res.status(404).send('Courses not found')
+    }
+})
+
+router.get('/active', auth, async(req,res)=>{
+    try{
+        const activeSession = await Session.findOne({status: true})
+        if(!activeSession){
+            throw new Error("Session not found")
+        }
+        
+        const courses = await offeredCourse.find({Session: activeSession.name})
+        
+        if(!courses){
+            throw new Error("Courses not found")
         }
         res.send(courses)
     }catch(e){

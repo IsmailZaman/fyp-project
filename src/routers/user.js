@@ -5,6 +5,7 @@ const auth = require('../middleware/auth').auth
 const authrole = require('../middleware/auth').authrole
 const generator = require('generate-password')
 const mailTransport = require('../mailer/mailer')
+const advisorData = require('../models/advisor/advisor')
 
 
 //Registration requests here. A token is generated on registration
@@ -71,6 +72,9 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
     
     const {prefix, initial, final,batch,dept} = req.body
     const range = (final - initial)
+    if(range > 200){
+        res.status(400).send('students added are greater than 200')
+    }
     if(range < 0){
         res.status(400).send("Incorrect range of roll numbers given")
         return
@@ -134,6 +138,16 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
 })
 
 
+//Request to get student data by id 
+router.get('/users/students/:id', auth, authrole('admin'), async(req,res)=>{
+    try{
+        const student = await User.findById(req.params.id).populate('studentData')
+        res.send(student)
+    }catch(e){
+        res.status(404).send()
+    }
+})
+
 
 //Only returns the users own profile
 router.get('/users/me',auth,async(req,res)=>{
@@ -153,7 +167,31 @@ router.get('/users/me',auth,async(req,res)=>{
     }
 })
 
+//Create advisor
+router.post('/users/advisor', auth,authrole('admin'), async(req,res)=>{
+    console.log("hello")
+    const email = req.body.email
+    const password = req.body.password
+    const name = req.body.name
 
+
+    //create new User
+    const newUser = new User({email,password,name, roles: ['advisor']})
+    //create new Advisor Data
+    const newAdvisorData = new advisorData()
+    //Link advisor data to user
+    newUser['advisorData'] = newAdvisorData._id
+    //Initialize Batches array
+    newAdvisorData['batches'] = []
+    try{
+        await newAdvisorData.save()
+        await newUser.save()
+        res.status(201).send(newUser)
+    }catch(e){
+        res.status(400).send()
+    }
+
+})
 
 
 //Returns all the users. Should be only accessible to an admin
