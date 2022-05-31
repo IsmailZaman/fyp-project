@@ -120,7 +120,31 @@ router.patch('/approve/:id', auth,authrole('advisor'), async(req,res)=>{
     }
 })
 
+router.get('/',auth,async(req,res)=>{
+    const id = req.user._id
 
+    try{
+        const request = await Request.findOne({student: id}).populate({
+            path:'courses',
+            populate:{
+                path:'course'
+            }
+
+
+        })
+        if(!request){
+            throw new Error('No request not found!')
+        }
+        res.send(request)
+
+    }catch{
+        res.status(404).send()
+    }
+
+
+
+
+})
 
 //remove courses from a request
 

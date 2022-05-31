@@ -11,7 +11,8 @@ router.post('/',auth,authrole('admin'),async(req,res)=>{
     newCourse = new courseData()
     newCourse["name"] = req.body.name
     newCourse["createdBy"] = req.user._id
-
+    newCourse["creditHours"] = req.body.creditHours
+    
     try{
         const department = await Department.findOne({
             "name":req.body.dept
@@ -28,8 +29,6 @@ router.post('/',auth,authrole('admin'),async(req,res)=>{
 
     }catch(e){
         res.status(400).send()
-
-
     }
 })
 

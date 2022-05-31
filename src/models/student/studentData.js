@@ -22,7 +22,8 @@ const studentSchema = new mongoose.Schema({
     batch: {
         type: String,
         required: true,
-        lowercase: true
+        lowercase: true,
+        ref: 'batch'
     },
     department: {
         type:String,

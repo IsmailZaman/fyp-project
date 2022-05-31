@@ -14,6 +14,7 @@ const refreshRouter = require('./routers/handleRefresh')
 const studentRouter = require('./routers/administration/studentData')
 const advisorRouter = require('./routers/advisor/advisor')
 const requestRouter = require('./routers/Enrollment/Request')
+const batchRouter = require('./routers/administration/batch')
 
 const app = express()
 //app.use("*",cors())
@@ -33,6 +34,7 @@ app.use('/refresh', refreshRouter)
 app.use('/departments',departmentRouter)
 app.use('/programs',programRouter)
 app.use('/courses',courseDataRouter)
+app.use('/batch',batchRouter)
 
 //Enrollment routers
 app.use('/session',sessionRouter)
