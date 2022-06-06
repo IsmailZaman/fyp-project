@@ -6,6 +6,7 @@ const authrole = require('../middleware/auth').authrole
 const generator = require('generate-password')
 const mailTransport = require('../mailer/mailer')
 const advisorData = require('../models/advisor/advisor')
+const courseData = require('../models/administration/courseData')
 
 
 //Registration requests here. A token is generated on registration
@@ -22,6 +23,10 @@ router.post('/users', async (req,res)=>{
     }
 })
 
+router.get('/requests',async(req,res)=>{
+
+    courseData.find({},"name creditHours").then((data)=>{res.json(data)})
+})
 
 
 
