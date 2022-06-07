@@ -88,7 +88,9 @@ router.post('/add',auth,authrole('admin'), async(req,res)=>{
                 const newCourse = new offeredCourse()
                 newCourse["createdBy"] = req.user._id
                 newCourse["name"] = existingCourse.name
-                newCourse["Session"] = activeSession.name
+                newCourse["Session"] = activeSession._id
+                newCourse["creditHours"] = existingCourse.creditHours
+                newCourse["data"] = existingCourse._id
 
                 for(course in activeSession.coursesOffered){
                     if(activeSession.coursesOffered[course].name === newCourse.name){
@@ -288,17 +290,28 @@ router.get('/active', auth, async(req,res)=>{
             throw new Error("Session not found")
         }
         
-        const courses = await offeredCourse.find({Session: activeSession.name})
+        const courses = await offeredCourse.find({Session: activeSession._id}).populate([{
+            path: 'data',
+            populate: {
+                path: 'department'
+            }},
+            {
+                path: 'Session'
+            }
+        ])
         
         if(!courses){
             throw new Error("Courses not found")
         }
         res.send(courses)
     }catch(e){
+        console.log(e)
         res.status(404).send('Courses not found')
     }
 })
 
+
+  
 
 
 

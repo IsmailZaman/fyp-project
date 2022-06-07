@@ -6,10 +6,10 @@ const Batch = require('../../models/administration/batch')
 
 router.post('/',auth,authrole('admin'), async(req,res)=>{
     const batch = new Batch()
-    console.log(req.body.dept)
+    
     batch['name'] = req.body.batch
     batch['department'] = req.body.dept
-    console.log(batch)
+    
 
     try{
         await batch.save()

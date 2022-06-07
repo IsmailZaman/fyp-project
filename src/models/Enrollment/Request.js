@@ -7,6 +7,7 @@ const requestSchema = new mongoose.Schema({
         type: String,
         required:true,
         lowercase:true,
+        ref: 'batch'
     },
 
     //student id
@@ -47,6 +48,9 @@ const requestSchema = new mongoose.Schema({
         ref: 'session',
         required: true,
         lowercase: true
+    },
+    creditHours:{
+        type: Number
     }   
    
 

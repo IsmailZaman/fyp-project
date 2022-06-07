@@ -65,7 +65,7 @@ router.get('/all', auth,authrole('admin'), async(req,res)=>{
 })
 
 //This request will return an active session if it exists
-router.get('/active',auth,authrole('admin'), async(req,res)=>{
+router.get('/active',auth, async(req,res)=>{
     try{
         const session = await Session.findOne({"status":true})
         
