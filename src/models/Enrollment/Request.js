@@ -29,10 +29,6 @@ const requestSchema = new mongoose.Schema({
                 type: mongoose.Schema.Types.Boolean,
                 default: true
             },
-            approved:{
-                type: mongoose.Schema.Types.Boolean,
-                default: false
-            },
             enrolled:{
                 type: mongoose.Schema.Types.Boolean,
                 default: false

@@ -7,7 +7,7 @@ const Session = require('../../models/Enrollment/session')
 const User = require('../../models/user')
 const studentSemester = require('../../models/student/studentSemester')
 const studentData = require('../../models/student/studentData')
-const mongoose = require('mongoose')
+const Request = require('../../models/Enrollment/Request')
 
 
 
@@ -167,7 +167,7 @@ router.delete('/',auth, authrole('admin'), async(req,res)=>{
 //When a student sends request to this link, we check if we have an active session. If we have one, we will create
 //a new semester for student and enroll him. 
 router.post('/enroll', auth, async(req,res)=>{
-    console.log("hello")
+   
 
     let newCourse=""
     let courseFound = false
@@ -308,6 +308,70 @@ router.get('/active', auth, async(req,res)=>{
         console.log(e)
         res.status(404).send('Courses not found')
     }
+})
+
+//This request will only return the courses in which the student is not currently enrolled in or has not requested to be enrolled in
+router.get('/enrollment', auth, authrole('student'),async(req,res)=>{
+    try{
+
+        const activeSession = await Session.findOne({"status": true})
+        if(!activeSession){
+            throw new Error("Session not found")
+        }
+        
+        const courses = await offeredCourse.find({Session: activeSession._id}).populate([{
+            path: 'data',
+            populate: {
+                path: 'department'
+            }},
+            {
+                path: 'Session'
+            }
+        ])
+
+        const existingRequest = await Request.findOne({student: req.user._id, session: activeSession.name}).populate({
+            path:'courses',
+            populate:{
+                path:'course'
+            }
+        })
+        if(!courses){
+            throw new Error('Courses not found')
+        }
+
+        let filteredCourses = []
+        let matchFound = false
+        if(existingRequest){
+            for(let i =0; i < courses.length; i++){
+                matchFound = false
+                for(let j =0; j<existingRequest.courses.length; j++){
+                    if(courses[i]?.data?.name === existingRequest?.courses[j]?.course?.name){
+                        matchFound = true
+                    }
+                }
+                if(matchFound == false){
+                    filteredCourses.push(courses[i])
+                }
+            }
+        }
+        
+        if(!existingRequest)filteredCourses = courses
+        
+        res.send(filteredCourses)
+        
+    
+
+    }catch(e){
+        res.status(404).send('Courses not found')
+    }
+
+
+
+
+
+
+
+
 })
 
 

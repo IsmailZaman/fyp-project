@@ -6,22 +6,8 @@ const auth = require('../../middleware/auth').auth
 const authrole = require('../../middleware/auth').authrole
 const Session = require('../../models/Enrollment/session')
 const mongoose = require('mongoose')
+const advisorData = require('../../models/advisor/advisor')
 
-//get all requests for a batch
-
-router.get('/:batch',auth,authrole(['admin','advisor']),async(req,res)=>{
-
-    try{    
-        const batchRequests = await Request.find({batch: req.params.batch})
-        if(!batchRequests){
-            throw new Error('No batch requests found.')
-        }
-        res.send(batchRequests)
-
-    }catch{
-        res.status(404).send()
-    }
-})
 
 //get all the pending requests for a batch
 router.get('/pending/:batch', auth, authrole(['admin','advisor']), async(req,res)=>{
@@ -37,6 +23,58 @@ router.get('/pending/:batch', auth, authrole(['admin','advisor']), async(req,res
 
     }catch{
         res.status(404).send()
+    }
+
+})
+
+//get the number of pending and closed requests for the advisor
+router.get('/number', auth, authrole(['advisor']), async(req,res)=>{
+    try{    
+        const advisorInfo = await advisorData.findOne({_id: req.user.advisorData}).populate([{
+            path: 'sessionList',
+            populate: [
+                {path: 'batch'}
+            ]
+        }])
+        if(!advisorInfo) throw new Error('advisor info not found.')
+
+        const activeSession = await Session.findOne({"status": true})
+        if(!activeSession) throw new Error('active session not foundddd')
+
+        console.log('advisor', advisorInfo.sessionList[0])
+
+
+       
+
+        const batchesAdvising = advisorInfo?.sessionList?.filter((session)=>session.Session.toString() === activeSession._id.toString())
+        const searchArray = batchesAdvising[0]?.batch?.map((batchData)=>batchData.name)
+       
+        const returnObject = {
+            pending: 0,
+            closed: 0
+        }
+
+        const batchRequests = await Request.find({batch: {$in: searchArray}})
+
+        if(!batchRequests) throw new Error('Batch requests not found')
+
+        batchRequests.forEach((request)=>{
+            if(!request.closed) returnObject['pending'] = returnObject['pending'] + 1
+            else returnObject['closed'] = returnObject['closed'] + 1
+        })
+
+        console.log(batchRequests)
+        console.log(returnObject)
+
+
+        if(!batchRequests){
+            throw new Error('No batch requests found.')
+        }
+        
+        res.send(returnObject)
+
+    }catch(e){
+        res.status(404).send(e.message)
     }
 
 })
@@ -124,7 +162,13 @@ router.get('/',auth,async(req,res)=>{
     const id = req.user._id
 
     try{
-        const request = await Request.findOne({student: id}).populate({
+        const activeSession = await Session.findOne({status: true})
+        if(!activeSession){
+            throw new Error('Session not found')
+        }
+
+
+        const request = await Request.findOne({student: id, session: activeSession.name}).populate({
             path:'courses',
             populate:{
                 path:'course'
@@ -137,7 +181,7 @@ router.get('/',auth,async(req,res)=>{
         }
         res.send(request)
 
-    }catch{
+    }catch(e){
         res.status(404).send()
     }
 

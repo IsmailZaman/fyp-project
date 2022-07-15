@@ -186,11 +186,11 @@ router.post('/users/advisor', auth,authrole('admin'), async(req,res)=>{
     try{
         await newAdvisorData.save()
         await newUser.save()
-        res.status(201).send(newUser)
+        console.log('hello jee')
+        res.status(201).send(`${newUser.name} added as advisor`)
     }catch(e){
-        res.status(400).send()
+        res.status(400).send(e.message ? e.message : 'Unable to add advisor' )
     }
-
 })
 
 

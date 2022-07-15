@@ -11,7 +11,7 @@ const authrole = require('../../middleware/auth').authrole
 
 
 router.post('/',auth,authrole('admin'),async(req,res)=>{
-    console.log("HELLO")
+    
     try{
         //"CHECK IF THE DEPARTMENT EXISTS"
         const dept = await Department.findOne({"name": req.body.department})
