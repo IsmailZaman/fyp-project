@@ -1,22 +1,20 @@
 const router = require('express').Router()
 const User = require('../../models/user')
-const studentData = require('../../models/student/studentData')
 const Request = require('../../models/Enrollment/Request')
 const auth = require('../../middleware/auth').auth
 const authrole = require('../../middleware/auth').authrole
 const Session = require('../../models/Enrollment/session')
-const mongoose = require('mongoose')
 const advisorData = require('../../models/advisor/advisor')
 
 
 //get all the pending requests for a batch
-router.get('/pending/:batch', auth, authrole(['admin','advisor']), async(req,res)=>{
+router.get('/pending/:session', auth, authrole(['admin','advisor']), async(req,res)=>{
     try{    
-        const batchRequests = await Request.find({batch: req.params.batch})
-        if(!batchRequests){
-            throw new Error('No batch requests found.')
+        const sessionRequests = await Request.find({session: req.params.session})
+        if(!sessionRequests){
+            throw new Error('No requests found.')
         }
-        const pending = batchRequests.filter((request)=>{
+        const pending = sessionRequests.filter((request)=>{
             return request.closed === false
         })
         res.send(pending)
@@ -27,34 +25,64 @@ router.get('/pending/:batch', auth, authrole(['admin','advisor']), async(req,res
 
 })
 
+//get request by id
+router.get('/:id', auth, authrole(['admin','advisor']), async(req,res)=>{
+    try{
+        const request = await Request.findById(req.params.id).populate({
+            path: 'courses',
+            populate: {
+                path: 'course',
+                populate: {
+                    path: 'data',
+                    populate: {
+                        path: 'department'
+                    }
+                }
+            }
+        })
+        if(!request) throw new Error('No requests found')
+        res.send(request)
+    }catch(e){
+        res.status(404).send(e.message)
+    }
+})
+
+
+
 //get the number of pending and closed requests for the advisor
 router.get('/number', auth, authrole(['advisor']), async(req,res)=>{
+    
     try{    
-        const advisorInfo = await advisorData.findOne({_id: req.user.advisorData}).populate([{
+
+        const advisorInfo = await advisorData.findById(req.user.advisorData).populate([{
             path: 'sessionList',
             populate: [
                 {path: 'batch'}
             ]
         }])
         if(!advisorInfo) throw new Error('advisor info not found.')
+        
 
         const activeSession = await Session.findOne({"status": true})
         if(!activeSession) throw new Error('active session not foundddd')
 
-        console.log('advisor', advisorInfo.sessionList[0])
+        //console.log('advisor', advisorInfo.sessionList[0])
 
 
        
 
         const batchesAdvising = advisorInfo?.sessionList?.filter((session)=>session.Session.toString() === activeSession._id.toString())
+
         const searchArray = batchesAdvising[0]?.batch?.map((batchData)=>batchData.name)
+
        
         const returnObject = {
             pending: 0,
             closed: 0
         }
 
-        const batchRequests = await Request.find({batch: {$in: searchArray}})
+        const batchRequests = await Request.find({batch: {$in: searchArray}, session: activeSession?.name})
+        console.log(batchRequests)
 
         if(!batchRequests) throw new Error('Batch requests not found')
 
@@ -63,8 +91,6 @@ router.get('/number', auth, authrole(['advisor']), async(req,res)=>{
             else returnObject['closed'] = returnObject['closed'] + 1
         })
 
-        console.log(batchRequests)
-        console.log(returnObject)
 
 
         if(!batchRequests){
@@ -74,6 +100,7 @@ router.get('/number', auth, authrole(['advisor']), async(req,res)=>{
         res.send(returnObject)
 
     }catch(e){
+        console.log(e)
         res.status(404).send(e.message)
     }
 
@@ -83,17 +110,31 @@ router.get('/number', auth, authrole(['advisor']), async(req,res)=>{
 
 //enrollment request by a student
 router.post('/create', auth,async(req,res)=>{
-    
     const request =new Request()
     try{
         const session = await Session.findOne({status: true})
         if(!session){
             throw new Error("Session not found")
         }
+
+        //converting date into UTC + 5 which so it matches local pakistan time
+
+        let today = new Date()
+        today.setHours(today.getHours() + 5)
+
+        session.enrollmentPeriod = new Date(session?.enrollmentPeriod)
+
+        console.log('today', today)
+        console.log('deadline', session.enrollmentPeriod)
+
+        if(session.enrollmentPeriod.getTime() < today.getTime()){
+            throw new Error('Enrollment deadline has passed')
+        }
         const student = await User.findById(req.user._id).populate('studentData')
         if(!student){
             throw new Error('student not found')
         }
+        
 
 
         const existingRequest = await Request.findOne({session: session.name,student:req.user._id})
@@ -103,6 +144,7 @@ router.post('/create', auth,async(req,res)=>{
             request['session'] = session.name
             request['courses'] = req?.body?.courses
             request['batch'] = student?.studentData?.batch
+            request['creditHours'] = req?.body?.creditHours
         }
         if(existingRequest){
             
@@ -119,7 +161,8 @@ router.post('/create', auth,async(req,res)=>{
                     coursesToAdd.push(course)
                 }
             })           
-            existingRequest.courses = [...existingRequest.courses,...coursesToAdd]                                                                                                                                                                                                                                                                                                            
+            existingRequest.courses = [...existingRequest.courses,...coursesToAdd]
+            existingRequest.creditHours = existingRequest.creditHours + req?.body?.creditHours                                                                                                                                                                                                                                                                                                            
         }                                                                                                               
         
         if(!existingRequest){
@@ -134,7 +177,7 @@ router.post('/create', auth,async(req,res)=>{
 
     }catch(e){
         console.log(e)
-        res.status(400).send()
+        res.status(400).send(e.message)
     }
 
 })
@@ -173,12 +216,13 @@ router.get('/',auth,async(req,res)=>{
             populate:{
                 path:'course'
             }
-
-
         })
         if(!request){
             throw new Error('No request not found!')
         }
+        console.log(request.student)
+        console.log(id)
+        if(request.student?.toString() != id?.toString()) throw new Error('No requests found.')
         res.send(request)
 
     }catch(e){

@@ -112,6 +112,37 @@ router.patch('/finish/:name',auth,authrole('admin'), async(req,res)=>{
 })
 
 
+//This request allows updating the deadline
+router.patch('/update', auth, authrole('admin'), async(req,res)=>{
+    try{
+        const session = await Session.findOne({"status":true})
+        
+        if(!session){
+            throw new Error("Session not found")
+        }
+        const newDeadline = new Date(req?.body?.enrollmentPeriod)
+        newDeadline.setHours(newDeadline.getHours() + 5)
+        console.log(req?.body?.enrollmentPeriod)
+        session["enrollmentPeriod"] = newDeadline
+        console.log(session)
+        await session.save()
+
+        console.log('Updated enrollment period')
+
+        res.send('Deadline Updated')
+
+    }catch(e){
+        res.status(400).send(e.message)
+
+    }
+
+
+
+
+
+
+})
+
 
 
 

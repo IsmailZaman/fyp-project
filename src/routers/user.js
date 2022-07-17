@@ -139,7 +139,7 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
 
 
 //Request to get student data by id 
-router.get('/users/students/:id', auth, authrole('admin'), async(req,res)=>{
+router.get('/users/students/:id', auth, authrole(['admin','advisor']), async(req,res)=>{
     try{
         const student = await User.findById(req.params.id).populate('studentData')
         res.send(student)
@@ -288,6 +288,7 @@ router.patch('/users/updateStudentData',auth,authrole("admin"),async(req,res)=>{
     console.log("Data can't be changed")
     }      
 })
+
 //Delete a user
 router.delete('/users/deleteUser',auth,authrole("admin"),async(req,res)=>
 {

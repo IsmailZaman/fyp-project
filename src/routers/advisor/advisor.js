@@ -3,6 +3,7 @@ const User = require('../../models/user')
 const advisorData = require('../../models/advisor/advisor')
 const Session = require('../../models/Enrollment/session')
 const Batch = require('../../models/administration/batch')
+const Request = require('../../models/Enrollment/Request')
 const auth = require('../../middleware/auth').auth
 const authrole = require('../../middleware/auth').authrole
 
@@ -63,26 +64,49 @@ router.get('/sessiondata', auth, authrole('advisor'), async(req,res)=>{
 
 
 //fetches list of students who have placed in requests
-router.get('/student/requests', auth, authrole('advisor'), async(req,res)=>{
+router.get('/student/requests', auth, authrole(['advisor']), async(req,res)=>{
     try{
         const activeSession = await Session.findOne({status: 'true'})
         if(!activeSession) throw new Error('No active session found.')
 
 
-        let batchesAdvising = await advisorData.findOne({_id: req.user?.advisorData})
+        let batchesAdvising = await advisorData.findOne({_id: req.user?.advisorData}).populate({
+            path:'sessionList',
+            populate: [
+                {path: 'batch'}
+            ]
+        })
         if(!batchesAdvising) throw new Error('No batches found.')
 
         batchesAdvising = batchesAdvising?.sessionList?.filter((sessionData)=> sessionData.Session?.toString() === activeSession._id?.toString())
         if(batchesAdvising.size <= 0 ) throw new Error('No batches found.')
-        console.log(batchesAdvising)
 
+        const searchArray = batchesAdvising[0]?.batch?.map((batchData)=>batchData.name)
+        console.log(searchArray)
+        let students = await Request.find({batch: {$in: searchArray}, session: activeSession?.name}).populate({
+            path: 'student',
+            populate: {
+                path: 'studentData'
+            }
+        })
+        if(students.length < 0)throw new Error('students not found.')
+
+        students = students.map((record)=>{
+            return {
+                email: record?.student?.email,
+                rollNumber: record?.student?.studentData?.rollNumber,
+                batch: record?.student?.studentData?.batch,
+                department: record?.student?.studentData?.department,
+                id: record?._id
+            }
+        })
         
 
         
 
 
 
-        res.send(batchesAdvising[0])
+        res.send(students)
 
     }catch(e){
         console.log(e)
@@ -201,7 +225,6 @@ router.patch('/assign/:id',auth,authrole('admin'),async(req,res)=>{
 
 
 })
-
 
 
 
