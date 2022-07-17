@@ -7,6 +7,24 @@ const Session = require('../../models/Enrollment/session')
 const advisorData = require('../../models/advisor/advisor')
 
 
+//Get pending enrollment requests 
+router.get('/unresolved', auth, authrole('admin'), async(req,res)=>{
+    try{
+        const activeSession = await Session.findOne({status: true})
+        if(!activeSession) throw new Error('Session not found.')
+
+        const pendingRequests = await Request.find({session: activeSession.name, closed: false})
+        if(!pendingRequests) throw new Error('No requests found.')
+        console.log(pendingRequests.length)
+
+        res.status(200).send(String(pendingRequests.length))
+
+    }catch(e){
+        res.status(404).send(e.message)
+    }
+})
+
+
 //get all the pending requests for a batch
 router.get('/pending/:session', auth, authrole(['admin','advisor']), async(req,res)=>{
     try{    
@@ -181,7 +199,6 @@ router.post('/create', auth,async(req,res)=>{
     }
 
 })
-
 
 
 
