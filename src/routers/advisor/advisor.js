@@ -63,7 +63,7 @@ router.get('/sessiondata', auth, authrole('advisor'), async(req,res)=>{
 })
 
 
-//fetches list of students who have placed in requests
+//fetches list of students who have placed in requests which are pending
 router.get('/student/requests', auth, authrole(['advisor']), async(req,res)=>{
     try{
         const activeSession = await Session.findOne({status: 'true'})
@@ -83,12 +83,14 @@ router.get('/student/requests', auth, authrole(['advisor']), async(req,res)=>{
 
         const searchArray = batchesAdvising[0]?.batch?.map((batchData)=>batchData.name)
         console.log(searchArray)
-        let students = await Request.find({batch: {$in: searchArray}, session: activeSession?.name}).populate({
+        let students = await Request.find({batch: {$in: searchArray}, session: activeSession?.name, closed: 'false'}).populate({
             path: 'student',
             populate: {
                 path: 'studentData'
             }
         })
+        console.log(students)
+
         if(students.length < 0)throw new Error('students not found.')
 
         students = students.map((record)=>{

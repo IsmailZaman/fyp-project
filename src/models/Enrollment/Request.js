@@ -25,17 +25,9 @@ const requestSchema = new mongoose.Schema({
                 ref: 'offeredCourse',
                 required: true
             },
-            pending:{
-                type: mongoose.Schema.Types.Boolean,
-                default: true
-            },
-            rejected:{
-                type: mongoose.Schema.Types.Boolean,
-                default: false
-            },
-            enrolled:{
-                type: mongoose.Schema.Types.Boolean,
-                default: false
+            status:{
+                type: String,
+                default: 'Pending'
             }
         }
     ],
@@ -51,6 +43,9 @@ const requestSchema = new mongoose.Schema({
     },
     creditHours:{
         type: Number
+    },
+    message: {
+        type: String
     }   
    
 
