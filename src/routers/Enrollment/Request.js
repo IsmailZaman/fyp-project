@@ -84,6 +84,30 @@ router.get('/unresolved', auth, authrole('admin'), async(req,res)=>{
 })
 
 
+router.get('/piechart', auth, authrole('admin'), async(req,res)=>{
+    try{
+        const activeSession = await Session.findOne({status: true})
+        if(!activeSession) throw new Error('Session not found.')
+
+        const totalRequests = await Request.find({session: activeSession.name})
+        const pendingRequests = totalRequests.filter(request => {
+            return request.closed === false
+        })
+        if(!totalRequests) throw new Error('No requests found.')
+        console.log(pendingRequests.length)
+
+        res.status(200).send({
+            pending: pendingRequests?.length,
+            closed: totalRequests?.length - pendingRequests?.length
+        })
+
+    }catch(e){
+        res.status(404).send(e.message)
+    }
+
+})
+
+
 //get all the pending requests for a batch
 router.get('/pending/:session', auth, authrole(['admin','advisor']), async(req,res)=>{
     try{    
