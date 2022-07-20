@@ -111,16 +111,23 @@ router.patch('/drop', auth, async(req,res)=>{
         if(!req_id || !course_id) throw new Error('incorrect parameters')
         
 
-        const request = await Request.findById(req_id)
+        const request = await Request.findById(req_id).populate({
+            path: 'courses',
+            populate: ['course']
+        })
+        
         
         if(!request) throw new Error('request not found')
 
-        if(request.student.toString() !== req.user._id.toString()) throw new Error('Forbidden')
+        if(request.student.toString() !== req.user.studentData.toString()) throw new Error('Forbidden')
 
         request.courses = request.courses.filter((course)=> {
-            if(course._id.toString() === course_id.toString()) request.creditHours = request.creditHours - course.creditHours
+            if(course._id.toString() === course_id.toString()) {
+                request.creditHours = Number(request.creditHours) - Number(course.course.creditHours)
+            }
             return course._id.toString() != course_id.toString()}
         )
+       
 
         if(request.courses.length === 0) await Request.findByIdAndDelete(req_id)
         else await request.save()
@@ -135,6 +142,8 @@ router.patch('/drop', auth, async(req,res)=>{
     }
 
 })
+
+
 
 
 
@@ -165,10 +174,10 @@ router.post('/create', auth,async(req,res)=>{
         
 
 
-        const existingRequest = await Request.findOne({session: session.name,student:req.user._id})
+        const existingRequest = await Request.findOne({session: session.name,student:req.user.studentData})
         if(!existingRequest){
             
-            request['student'] = req.user._id
+            request['student'] = req.user.studentData
             request['session'] = session.name
             request['courses'] = req?.body?.courses
             request['batch'] = student?.studentData?.batch
@@ -204,7 +213,7 @@ router.post('/create', auth,async(req,res)=>{
 
 
     }catch(e){
-        
+        console.log(e.message)
         res.status(400).send(e.message)
     }
 
@@ -252,7 +261,7 @@ router.get('/:id', auth, authrole(['admin','advisor']), async(req,res)=>{
 
 
 router.get('/',auth,async(req,res)=>{
-    const id = req.user._id
+    const id = req.user.studentData
 
     try{
         const activeSession = await Session.findOne({status: true})

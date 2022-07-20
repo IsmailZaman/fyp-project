@@ -14,7 +14,7 @@ const requestSchema = new mongoose.Schema({
     student:{
         type:mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: 'User' //or studentData?
+        ref: 'studentData' //or studentData?
     },
 
     //courses requested by student for enrollment
@@ -42,7 +42,8 @@ const requestSchema = new mongoose.Schema({
         lowercase: true
     },
     creditHours:{
-        type: Number
+        type: Number,
+        default: 0
     },
     message: {
         type: String

@@ -138,7 +138,7 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
 })
 
 
-//Request to get student data by id 
+//Request to get student data by user id 
 router.get('/users/students/:id', auth, authrole(['admin','advisor']), async(req,res)=>{
     try{
         const student = await User.findById(req.params.id).populate('studentData')
@@ -146,6 +146,18 @@ router.get('/users/students/:id', auth, authrole(['admin','advisor']), async(req
     }catch(e){
         res.status(404).send()
     }
+})
+
+//Request to get studentData by student id 
+router.get('/studentdata/:id', auth, authrole(['admin', 'advisor']), async(req,res)=>{
+
+    try{
+        const student = await studentData.findById(req.params.id)
+        res.send(student)
+    }catch(e){
+        res.status(404).send()
+    }
+
 })
 
 

@@ -5,7 +5,7 @@ const offeredCourse = require('../../models/Enrollment/offeredCourse')
 const courseData =require('../../models/administration/courseData')
 const Session = require('../../models/Enrollment/session')
 const User = require('../../models/user')
-const studentSemester = require('../../models/student/studentSemester')
+const studentSemester = require('../../models/student/StudentSemester')
 const studentData = require('../../models/student/studentData')
 const Request = require('../../models/Enrollment/Request')
 
@@ -329,7 +329,7 @@ router.get('/enrollment', auth, authrole('student'),async(req,res)=>{
             }
         ])
 
-        const existingRequest = await Request.findOne({student: req.user._id, session: activeSession.name}).populate({
+        const existingRequest = await Request.findOne({student: req.user.studentData, session: activeSession.name}).populate({
             path:'courses',
             populate:{
                 path:'course'

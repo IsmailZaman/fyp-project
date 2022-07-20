@@ -78,27 +78,22 @@ router.get('/student/requests', auth, authrole(['advisor']), async(req,res)=>{
         })
         if(!batchesAdvising) throw new Error('No batches found.')
 
+
         batchesAdvising = batchesAdvising?.sessionList?.filter((sessionData)=> sessionData.Session?.toString() === activeSession._id?.toString())
         if(batchesAdvising.size <= 0 ) throw new Error('No batches found.')
 
         const searchArray = batchesAdvising[0]?.batch?.map((batchData)=>batchData.name)
-        console.log(searchArray)
-        let students = await Request.find({batch: {$in: searchArray}, session: activeSession?.name, closed: 'false'}).populate({
-            path: 'student',
-            populate: {
-                path: 'studentData'
-            }
-        })
-        console.log(students)
+
+        let students = await Request.find({batch: {$in: searchArray}, session: activeSession?.name, closed: 'false'}).populate('student')
+        
 
         if(students.length < 0)throw new Error('students not found.')
 
         students = students.map((record)=>{
             return {
-                email: record?.student?.email,
-                rollNumber: record?.student?.studentData?.rollNumber,
-                batch: record?.student?.studentData?.batch,
-                department: record?.student?.studentData?.department,
+                rollNumber: record?.student?.rollNumber,
+                batch: record?.student?.batch,
+                department: record?.student?.department,
                 id: record?._id
             }
         })
@@ -111,7 +106,6 @@ router.get('/student/requests', auth, authrole(['advisor']), async(req,res)=>{
         res.send(students)
 
     }catch(e){
-        console.log(e)
         res.status(404).send(e.message)
     }
 
@@ -144,22 +138,16 @@ router.get('/student/requests/:advisorid', auth, authrole(['admin']), async(req,
 
         const searchArray = batchesAdvising[0]?.batch?.map((batchData)=>batchData.name)
         console.log(searchArray)
-        let students = await Request.find({batch: {$in: searchArray}, session: activeSession?.name, closed: 'false'}).populate({
-            path: 'student',
-            populate: {
-                path: 'studentData'
-            }
-        })
+        let students = await Request.find({batch: {$in: searchArray}, session: activeSession?.name, closed: 'false'}).populate('student')
         console.log(students)
 
         if(students.length < 0)throw new Error('students not found.')
 
         students = students.map((record)=>{
             return {
-                email: record?.student?.email,
-                rollNumber: record?.student?.studentData?.rollNumber,
-                batch: record?.student?.studentData?.batch,
-                department: record?.student?.studentData?.department,
+                rollNumber: record?.student?.rollNumber,
+                batch: record?.student?.batch,
+                department: record?.student?.department,
                 id: record?._id
             }
         })

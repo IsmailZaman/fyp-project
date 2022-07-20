@@ -3,7 +3,7 @@ const router = require('express').Router()
 const auth = require('../../middleware/auth').auth
 const authrole = require('../../middleware/auth').authrole
 const courseData = require('../../models/administration/courseData')
-const studentSemester = require('../../models/student/studentSemester')
+const studentSemester = require('../../models/student/StudentSemester')
 
 //Allows the admin to instantiate a new Enrollment session
 
