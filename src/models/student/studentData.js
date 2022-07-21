@@ -13,11 +13,24 @@ const studentSchema = new mongoose.Schema({
     },
 
     //semester info(array)
-    semesterList:[
-        {
+    semesterList:[{
+        // {
+        //     type: mongoose.Schema.Types.ObjectId,
+        //     ref: 'studentSemester'
+        // }
+        Session:{
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'studentSemester'
-        }
+            required: true,
+            ref: 'Session'
+        },
+        courses:[
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'offeredCourse'
+            }
+        ],
+        creditHours: { type: Number}
+    }
     ],
     batch: {
         type: String,

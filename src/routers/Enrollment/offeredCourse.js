@@ -5,7 +5,6 @@ const offeredCourse = require('../../models/Enrollment/offeredCourse')
 const courseData =require('../../models/administration/courseData')
 const Session = require('../../models/Enrollment/session')
 const User = require('../../models/user')
-const studentSemester = require('../../models/student/StudentSemester')
 const studentData = require('../../models/student/studentData')
 const Request = require('../../models/Enrollment/Request')
 
