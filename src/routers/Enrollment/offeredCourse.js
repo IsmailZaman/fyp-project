@@ -7,6 +7,7 @@ const Session = require('../../models/Enrollment/session')
 const User = require('../../models/user')
 const studentData = require('../../models/student/studentData')
 const Request = require('../../models/Enrollment/Request')
+const Department = require('../../models/administration/department')
 
 
 
@@ -373,7 +374,31 @@ router.get('/enrollment', auth, authrole('student'),async(req,res)=>{
 
 })
 
+//Find students enrolled in a particular course
+router.get('/enrolled/students/:id', auth, authrole('admin'),async(req,res)=>
+{
+    try{
+        const stds = await offeredCourse.findById(req.params.id).populate('enrolledStudents')
+        if(!stds){
+            throw new Error("No students enrolled")
+        }
 
+        const dataToSend = stds.enrolledStudents.map((data)=>{
+            return {'_id':data._id, 'rollNumber':data.rollNumber,'batch':data.batch,'department':data.department}
+        
+        }
+            
+            )
+
+        res.send(dataToSend)
+
+
+    }
+    catch(e){
+        res.status(404).send(e.message)
+
+    }
+})
   
 
 
