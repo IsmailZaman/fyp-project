@@ -28,7 +28,6 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
         if(!activeSession) throw new Error('Session not found')
 
         const student = await studentData.findById(req.body.student)
-        console.log(student)
         if(!student) throw new Error('student data not found')
 
         const currentSemester = student.semesterList.filter((semester)=>{
@@ -36,29 +35,24 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
         })
 
 
-        let coursesToEnroll = request.courses.filter((course)=>course.status === 'Approved')
+
+        let coursesToEnroll = req.body.courses.filter((course)=>{
+            return course.status === 'Approved'})
+
+        console.log(coursesToEnroll)
         coursesToEnroll = coursesToEnroll.map((course)=> course.course)
 
-        for(let i=0;i<request.courses.length; i+=1){
-            if(req.body.courses[i].status === 'Approved'){
-                request.courses[i].status = 'Enrolled'
-            }
-            if(req.body.courses[i].status === 'Rejected'){
-                request.courses[i].status = 'Rejected'
-            }
-        }
+        console.log(coursesToEnroll)
 
         
 
-        let duplicates = false
         const enrolledCourses = []
 
         //basically, if current semester doesnt exist, which means there is no corrosponding entry in student semesters for the current session,
         // we create a new semester, and then push it into our semester list
         if(currentSemester.length === 0) {
-            duplicates = false
+            
             console.log('didnt find semester')
-            console.log(coursesToEnroll)
             newSemester = {
                 Session: activeSession._id,
                 courses: coursesToEnroll
@@ -71,43 +65,74 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
             for(let i=0; i<coursesToEnroll.length; i++){
                 isNew = true
                 for(let j =0; j<currentSemester[0].courses.length; j++){
+                    
                     if(coursesToEnroll[i].toString() === currentSemester[0].courses[j].toString()){
-                        duplicates = true
                         isNew = false
                     }
                 }
                 if(isNew){
-                    currentSemester[0].courses.push(coursesToEnroll[i])
+                    console.log('is new found')
                     enrolledCourses.push(coursesToEnroll[i])
+                    currentSemester[0].courses.push(coursesToEnroll[i])
                 }
+
+            }
+        }  
+        
+        if(enrolledCourses.length === 0) {
+            for(let i =0; i<coursesToEnroll.length;i++){
+
+                let course = await offeredCourse.findById(coursesToEnroll[i])
+                if(!course) throw new Error('Invalid course id. Course not found')
+                course.enrolledStudents.push(student._id)
+                await course.save() 
+            }
+
+
+
+        }else{
+            for(let i =0; i<enrolledCourses.length;i++){
+                
+                let course = await offeredCourse.findById(enrolledCourses[i])
+                if(!course) throw new Error('Invalid course id. Course not found')
+                course.enrolledStudents.push(student._id)
+                await course.save() 
             }
         }
 
-        if(duplicates){
-            for(let i =0; i<enrolledCourses.length;i++){
-                let course = await offeredCourse.findById(enrolledCourses[i])
-                course.enrolledStudents.push(student._id)
-                await course.save()
-                
-            }
-        }else{
-            for(let i=0; i<coursesToEnroll.length;i++){
-                let course = await offeredCourse.findById(coursesToEnroll[i])
-                course.enrolledStudents.push(student._id)
-                await course.save()
+        
+       
+    
 
+
+        //Update the request:
+        for(let i=0;i<request.courses.length; i+=1){
+            if(req.body.courses[i].status === 'Approved'){
+                request.courses[i].status = 'Enrolled'
+            }
+            if(req.body.courses[i].status === 'Rejected'){
+                request.courses[i].status = 'Rejected'
             }
         }
         
+        let closeRequest = true;
+        for(let i=0;i<request.courses.length;i++){
+            if(request.courses[i].status !== 'Enrolled') closeRequest = false
+        }
+
+        if(closeRequest) request.closed = true
 
 
-
+        
+        
+        
         await student.save()
         await request.save()
-        res.send(student)
+        res.send('Successfully handled the request.')
 
 
     }catch(e){
+        console.log(e.message)
         res.status(400).send(e.message)
     }
 })
