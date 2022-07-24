@@ -20,6 +20,12 @@ const offeredCourseSchema = new mongoose.Schema({
             ref: 'studentData'
         }
     ],
+    pendingStudents:[
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'studentData'
+        }
+    ],
     Session:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Session',

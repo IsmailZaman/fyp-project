@@ -374,6 +374,54 @@ router.get('/enrollment', auth, authrole('student'),async(req,res)=>{
 
 })
 
+const compare = function(a,b){
+    if(a?.studentsEnrolled < b?.studentEnrolled) return 1
+    if(a?.studentsEnrolled > b?.studentsEnrolled) return -1
+    return 0
+}
+
+router.get('/barchart/:id', auth, authrole('admin'), async(req,res)=>{
+    try{
+        console.log('hello')
+        const activeSession = await Session.findOne({status: true}).populate({
+            path: 'coursesOffered',
+            populate: {
+                path: 'data',
+                populate: {
+                    path: 'department'
+                }
+            }
+        })
+        if(!activeSession) throw new Error('active session not found.')
+
+       
+        let courses = activeSession?.coursesOffered.filter((course)=>course.data?.department?._id?.toString() === req.params.id)
+        courses = courses.map((course)=>{
+            return {
+                courseName: course?.name,
+                studentsEnrolled: course?.enrolledStudents?.length
+            }
+        })
+
+        courses.sort(compare)
+
+        
+        
+        res.send(courses)
+
+    }catch(e){
+        console.log(e.message)
+        res.status(400).send(e.message)
+    }
+
+
+
+
+
+
+
+})
+
 //Find students enrolled in a particular course
 router.get('/enrolled/students/:id', auth, authrole('admin'),async(req,res)=>
 {

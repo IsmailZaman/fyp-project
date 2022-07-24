@@ -5,6 +5,8 @@ const auth = require('../../middleware/auth').auth
 const authrole = require('../../middleware/auth').authrole
 const Session = require('../../models/Enrollment/session')
 const advisorData = require('../../models/advisor/advisor')
+const offeredCourse = require('../../models/Enrollment/offeredCourse')
+const studentData = require('../../models/student/studentData')
 
 
 //get the number of pending and closed requests for the advisor
@@ -145,13 +147,61 @@ router.patch('/drop', auth, async(req,res)=>{
 
         if(request.student.toString() !== req.user.studentData.toString()) throw new Error('Forbidden')
 
+        //Incase a student has already been enrolled into the course. Then we dont just remove him from request, but also from enrolledCourse & studentData.
+        let enrolledCourse = ''
+
         request.courses = request.courses.filter((course)=> {
             if(course._id.toString() === course_id.toString()) {
                 request.creditHours = Number(request.creditHours) - Number(course.course.creditHours)
+                if(course.status === 'Enrolled') enrolledCourse = course.course._id
             }
+            
             return course._id.toString() != course_id.toString()}
         )
-       
+
+        //If the student has already been enrolled.
+        if(enrolledCourse != ''){
+            console.log('hello id', enrolledCourse)
+            //First we need to find the offered course itself so we can update it. 
+            const courseToDrop = await offeredCourse.findById(enrolledCourse)
+            if(!courseToDrop) throw new Error('course not found')
+            
+            courseToDrop.enrolledStudents = courseToDrop.enrolledStudents.filter((student)=>{
+                if(req.user.studentData?.toString() !== student.toString()) return true
+            })
+
+            //offeredCourse has been updated.
+            await courseToDrop.save()
+
+            //Next step is removing it from students own data.
+            const session = await Session.findById(courseToDrop?.Session)
+            if(!session) throw new Error('Unable to find active session')
+
+            //code for checking the enrollment deadline.
+            let today = new Date()
+            today.setHours(today.getHours() + 5)
+            session.enrollmentPeriod = new Date(session?.enrollmentPeriod)
+            if(session.enrollmentPeriod.getTime() < today.getTime()){
+                throw new Error('Cannot drop session, enrollment deadline has')
+            }
+
+            const student = await studentData.findById(req?.user?.studentData)
+            if(!student) throw new Error('Unable to update student data')
+
+            
+
+            student.semesterList.forEach((semester)=>{
+                if(semester.Session.toString() === session._id.toString()) {
+                    semester.courses = semester.courses.filter(course=> course._id.toString() !== courseToDrop._id.toString())
+                }
+            })
+
+            
+            await student.save()
+
+            
+            
+        }
 
         if(request.courses.length === 0) await Request.findByIdAndDelete(req_id)
         else await request.save()

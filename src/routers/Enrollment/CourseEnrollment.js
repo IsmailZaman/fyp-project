@@ -39,10 +39,10 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
         let coursesToEnroll = req.body.courses.filter((course)=>{
             return course.status === 'Approved'})
 
-        console.log(coursesToEnroll)
+      
         coursesToEnroll = coursesToEnroll.map((course)=> course.course)
 
-        console.log(coursesToEnroll)
+        
 
         
 
