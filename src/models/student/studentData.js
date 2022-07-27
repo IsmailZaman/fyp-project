@@ -14,10 +14,6 @@ const studentSchema = new mongoose.Schema({
 
     //semester info(array)
     semesterList:[{
-        // {
-        //     type: mongoose.Schema.Types.ObjectId,
-        //     ref: 'studentSemester'
-        // }
         Session:{
             type: mongoose.Schema.Types.ObjectId,
             required: true,

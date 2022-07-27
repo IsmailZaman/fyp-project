@@ -1,6 +1,4 @@
 const mongoose = require('mongoose')
-const studentData = require('./student/studentData')
-const advisorData = require('./advisor/advisor')
 const jwt = require('jsonwebtoken');
 
 
@@ -21,6 +19,13 @@ const userSchema = new mongoose.Schema({
         lowercase:true
     },
     roles:[String],
+    notifications: [{
+        text: {
+            type:String
+        },
+        seen: {type: Boolean},
+        link: {type: String} 
+    }],
 
     tokens:[{
         token:{
