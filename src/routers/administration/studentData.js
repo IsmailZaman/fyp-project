@@ -2,6 +2,7 @@ const router = require('express').Router()
 const User = require('../../models/user')
 const studentData = require('../../models/student/studentData')
 const { listIndexes } = require('../../models/student/studentData')
+const Session = require('../../models/Enrollment/session')
 const auth = require('../../middleware/auth').auth
 const authrole = require('../../middleware/auth').authrole
 
@@ -104,7 +105,93 @@ router.get('/:id', auth,authrole('admin'),async(req,res)=>{
     {
         console.log(req.params)
     }
-   
+})
+
+//Admin can access student's enrollment history (all session)
+router.get('/enrollhistory/sessions/:id',auth,authrole('admin'),async(req,res)=>{
+    const _id = req.params.id
+    console.log(_id)//user id of the student
+    try{
+        const stdData=await User.findById(_id).populate([
+            {path:'studentData',populate:{
+                path:'semesterList'
+            }},
+            {
+                path:'studentData',populate:{
+                    path:'semesterList',populate:{
+                        path:'Session'
+
+                    }
+                }
+            },
+        ])
+        //extracting required data
+        const list = stdData.studentData.semesterList.map((row)=>{
+            obj={ 'id':row.Session._id,'name':row.Session.name,'academicYear':row.Session.academicYear,'status':row.Session.status? 'Active':'Inactive'}
+            return obj
+        })
+        res.send(list)
+    }
+    catch(e){
+        console.log(e.message)
+        res.sendStatus(404)
+    }
+})
+//Admin can access student's enrollment history (all courses)
+router.get('/enrollhistory/courses/:sessionid/:userid',auth,authrole("admin"),async(req,res)=>{
+
+    const _id = req.params.sessionid
+    const st= req.params.userid
+    console.log(_id) //session id to get its courses
+
+    try{
+        const stdData=await User.findById(st).populate([
+            {path:'studentData',populate:{
+                path:'semesterList'
+            }},
+            {
+                path:'studentData',populate:{
+                    path:'semesterList',populate:{
+                        path:'Session'
+
+                    }
+                }
+            },
+            {
+                path:'studentData',populate:{
+                    path:'semesterList',populate:{
+                        path:'courses'
+                    }
+                }
+            },
+        ])
+        
+        console.log(stdData.studentData)
+        const list = stdData.studentData.semesterList.filter((obj)=>
+        {
+            console.log(obj)
+         if(obj.Session._id.toString() === _id.toString()){
+             return true
+         }
+        })
+
+        console.log(list)
+
+        const list2= list[0].courses.map((row)=>{
+            return{'_id':row._id,'name':row.name,'creditHours':row.creditHours}
+        })
+        
+         console.log(list2)
+        res.send(list2)
+
+        // console.log(list)
+        // res.send(stdData)
+    }
+    catch(e)
+    {
+        console.log(e)
+        res.send(404)
+    }
 })
 
 //Update student or user data
