@@ -19,14 +19,9 @@ const userSchema = new mongoose.Schema({
         lowercase:true
     },
     roles:[String],
-    notifications: [{
-        text: {
-            type:String
-        },
-        seen: {type: Boolean},
-        link: {type: String} 
-    }],
-
+    notifications: {
+        type: mongoose.Schema.Types.ObjectId
+    },
     tokens:[{
         token:{
             type: String,

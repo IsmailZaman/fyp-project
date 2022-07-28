@@ -7,7 +7,7 @@ const Session = require('../../models/Enrollment/session')
 const User = require('../../models/user')
 const studentData = require('../../models/student/studentData')
 const Request = require('../../models/Enrollment/Request')
-const Department = require('../../models/administration/department')
+
 
 
 
@@ -122,7 +122,8 @@ router.post('/add',auth,authrole('admin'), async(req,res)=>{
         
 
     }catch(e){
-        res.status(400).send()
+        console.log(e.message)
+        res.status(400).send(e.message)
     }
 
 })

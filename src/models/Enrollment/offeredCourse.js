@@ -1,5 +1,8 @@
-const courseData = require('../administration/courseData')
 const mongoose = require('mongoose')
+const NotificationType = require('../../NotificationType')
+const Notifications = require('../Notification/Notification')
+const studentData = require('../student/studentData')
+
 
 
 
@@ -15,12 +18,6 @@ const offeredCourseSchema = new mongoose.Schema({
         required: true
     },
     enrolledStudents:[
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'studentData'
-        }
-    ],
-    pendingStudents:[
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'studentData'
@@ -46,14 +43,28 @@ const offeredCourseSchema = new mongoose.Schema({
 
 
 offeredCourseSchema.pre('save', async function(next){
-    const course = await courseData.findOne({name: this.name})
+    const course = this
+    
+    
     if(!course){
         const error = new Error('Course data not found')
-        next(error)
+            next(error)
     }
     else{
+        const student = await studentData.findById(course.enrolledStudents[(course.enrolledStudents.length -1)])
+        if(!student) next()
+        
+        const userNotification = await Notifications.findOne({userId: student.userId})
+        if(!userNotification) next()
+        
+
+        const newNotification = new NotificationType()
+        userNotification.notifications.push(newNotification.enrolledInCourse(this.name))
+        
+        await userNotification.save()
         next()
     }
+    
 
     
 })
