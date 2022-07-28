@@ -93,8 +93,7 @@ router.patch('/finish/:name',auth,authrole('admin'), async(req,res)=>{
             throw new Error("Session not found")
         }
         //Update all the semester's status to finish/inactive.
-        const semesterUpdate = await studentSemester.updateMany({"Session": session.name}, {"$set":{"active": false}});
-        console.log("sem update ",semesterUpdate)
+        
 
         //Update the session status
         session.status = false;

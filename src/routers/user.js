@@ -6,6 +6,7 @@ const authrole = require('../middleware/auth').authrole
 const generator = require('generate-password')
 const mailTransport = require('../mailer/mailer')
 const advisorData = require('../models/advisor/advisor')
+const Notifications = require('../models/Notification/Notification')
 
 
 //Registration requests here. A token is generated on registration
@@ -13,9 +14,12 @@ const advisorData = require('../models/advisor/advisor')
 router.post('/users', async (req,res)=>{
     
     const newUser = new User(req.body)
+    const notification = new Notifications({userId: newUser._id})
     newUser['roles'].push('admin')
+    newUser['notifications'] = notification._id
     try{
         const token = await newUser.generateAuthToken();
+        await notification.save()
         res.send({newUser,token})
     }catch(e){
         res.status(400).send()
@@ -31,6 +35,7 @@ router.post('/users/login',async(req,res)=>{
     
     try{
         const user = await User.findByCredentials(req.body.email, req.body.password)
+        console.log(user)
         if(user.tokens.length > 10){
             user.tokens = []
         }
@@ -40,6 +45,7 @@ router.post('/users/login',async(req,res)=>{
         res.json({accessToken,user})
 
     }catch(e){
+        console.log(e.message)
         res.status(400).send()
     }
 })
@@ -92,16 +98,24 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
     for(let i =0; i<= range; i++){
         let currentRollNumber = prefix+(parseInt(initial) + i)
         
-
+       
         let student = new studentData({rollNumber: currentRollNumber, batch,department: dept})
+        const notification = new Notifications()
         student["createdBy"] = req.user._id
 
         let newUser = new User({
             email: `${currentRollNumber}@itu.edu.pk`,
             password: passwords[i]
         })
+        student["userId"] = newUser._id
+        notification['userId'] = newUser._id
+        
+
         newUser["studentData"] = student._id
         newUser['roles'].push('student')
+        newUser['notifications'] = notification._id
+
+        await notification.save()
 
         studentList.push(newUser)
         studentDataList.push(student)
@@ -191,11 +205,17 @@ router.post('/users/advisor', auth,authrole('admin'), async(req,res)=>{
     const newUser = new User({email,password,name, roles: ['advisor']})
     //create new Advisor Data
     const newAdvisorData = new advisorData()
+
+    //create notifications model
+    const notification = new Notifications({userId: newUser._id})
+
     //Link advisor data to user
     newUser['advisorData'] = newAdvisorData._id
+    newUser['notifications'] = notification._id
     //Initialize Batches array
     newAdvisorData['batches'] = []
     try{
+        await notification.save()
         await newAdvisorData.save()
         await newUser.save()
         console.log('hello jee')
