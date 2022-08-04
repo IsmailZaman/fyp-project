@@ -311,6 +311,60 @@ router.get('/active', auth, async(req,res)=>{
     }
 })
 
+// remove offered courses from add courses to session list
+router.get('/addcoursepage', auth, authrole('admin'),async(req,res)=>{
+    try
+    {
+        const session = await Session.findOne({"status":true}).populate("coursesOffered")
+        if(!session){
+            throw new Error("Session not found")
+        }
+
+
+        const courses= await courseData.find({}).populate("department")
+        if(!courses){
+            throw new Error('Courses not found')
+        }
+
+        const unoffered=[]
+        let flag=false
+        for(let i=0; i <courses.length; i++)
+        {
+            flag=true
+            for(let j=0; j<session.coursesOffered.length;j++)
+            {
+                console.log(session.coursesOffered[j].data)
+                if(courses[i]._id.toString() === session.coursesOffered[j].data.toString()){
+                    flag=false
+                    console.log("found")
+                    break
+                }
+            }
+            if (flag)
+            {
+                
+                unoffered.push(courses[i])
+            }
+        }
+        
+        const list = unoffered.map((row)=>
+        {
+            return{'_id':row._id,'name':row.name,'department':row.department.name,'creditHours':row.creditHours,}
+
+        })
+        
+        //console.log()
+        res.send(list)
+        
+    }
+    catch(e)
+    {
+        console.log(e.message)
+        res.status(400).send(e.message)
+
+    }
+})
+
 //This request will only return the courses in which the student is not currently enrolled in or has not requested to be enrolled in
 router.get('/enrollment', auth, authrole('student'),async(req,res)=>{
     try{
@@ -366,13 +420,6 @@ router.get('/enrollment', auth, authrole('student'),async(req,res)=>{
         res.status(404).send('Courses not found')
     }
 
-
-
-
-
-
-
-
 })
 
 const compare = function(a,b){
@@ -406,20 +453,12 @@ router.get('/barchart/:id', auth, authrole('admin'), async(req,res)=>{
 
         courses.sort(compare)
 
-        
-        
         res.send(courses)
 
     }catch(e){
         console.log(e.message)
         res.status(400).send(e.message)
     }
-
-
-
-
-
-
 
 })
 

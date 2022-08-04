@@ -7,7 +7,7 @@ const batchSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        lowercase: true
+        uppercase: true
     },
     department:{
         type: String,
