@@ -22,7 +22,6 @@ router.post('/',auth,authrole('admin'),async(req,res)=>{
         req.body["createdBy"] = req.user._id
         req.body["department"] = dept._id
 
-        console.log(req.body)
         
         const newProgram = new Program(req.body)
         await newProgram.save()
@@ -34,7 +33,6 @@ router.post('/',auth,authrole('admin'),async(req,res)=>{
         res.send(newProgram)
 
     }catch(e){
-        console.log(e)
         res.status(400).send()
     }
 })

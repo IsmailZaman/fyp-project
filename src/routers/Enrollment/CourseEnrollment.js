@@ -52,7 +52,6 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
         // we create a new semester, and then push it into our semester list
         if(currentSemester.length === 0) {
             
-            console.log('didnt find semester')
             newSemester = {
                 Session: activeSession._id,
                 courses: coursesToEnroll
@@ -71,7 +70,6 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
                     }
                 }
                 if(isNew){
-                    console.log('is new found')
                     enrolledCourses.push(coursesToEnroll[i])
                     currentSemester[0].courses.push(coursesToEnroll[i])
                 }
@@ -132,7 +130,6 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
 
 
     }catch(e){
-        console.log(e.message)
         res.status(400).send(e.message)
     }
 })

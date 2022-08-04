@@ -8,7 +8,6 @@ const authrole = require('../../middleware/auth').authrole
 router.post('/',auth,authrole('admin'), async (req,res)=>{
 
     req.body["createdBy"] = req.user._id
-    console.log(req.body["enrollmentPeriod"])
     req.body["enrollmentPeriod"] = new Date(req.body["enrollmentPeriod"])
     req.body["status"] = true
     const newSession = new Session(req.body)
@@ -25,7 +24,6 @@ router.post('/',auth,authrole('admin'), async (req,res)=>{
         await newSession.save()
         res.send(newSession)
     }catch(e){
-        console.log(e)
         res.status(400).send('Unable to add Session')
     }
 })
@@ -99,7 +97,6 @@ router.patch('/finish/:name',auth,authrole('admin'), async(req,res)=>{
         session.status = false;
         await session.save()
 
-        console.log("Here")
         res.send("Successfully finishes the session")
     }catch(e){
         res.status(400).send('Unable to finish the session')
@@ -119,12 +116,9 @@ router.patch('/update', auth, authrole('admin'), async(req,res)=>{
         }
         const newDeadline = new Date(req?.body?.enrollmentPeriod)
         newDeadline.setHours(newDeadline.getHours() + 5)
-        console.log(req?.body?.enrollmentPeriod)
         session["enrollmentPeriod"] = newDeadline
-        console.log(session)
         await session.save()
 
-        console.log('Updated enrollment period')
 
         res.send('Deadline Updated')
 

@@ -36,22 +36,20 @@ router.patch('/', auth, async(req,res)=>{
         
 
         const notification = await Notifications.findById(req.user.notifications)
-        console.log("hello",notification.notifications)
-       
+
         notification.notifications.forEach((obj)=>{
             if(notificationsRead.includes(obj._id.toString())){
                 obj.seen = true
             }
         })
 
-        console.log(notification.notifications)
+  
         await notification.save()
         
 
         res.status(201).send()
 
     }catch(e){
-        console.log(e.message)
         res.status(400).send()
 
     }

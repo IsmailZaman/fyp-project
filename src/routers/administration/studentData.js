@@ -26,9 +26,8 @@ router.get('/',auth,authrole('admin') ,async(req,res)=>{
 
 //Get all sessions for a student
 router.get('/allsessions', auth, async(req,res)=>{
-    console.log('hello')
+
     const _id = req.user.studentData
-    console.log(_id)
     try
     {
         const data = await studentData.findById(_id).populate({
@@ -43,16 +42,14 @@ router.get('/allsessions', auth, async(req,res)=>{
     }
     catch(e)
     {
-        console.log(e.message)
         res.sendStatus(404)
     }
 })
 
 //Get all previous courses for a particular session
 router.get('/sessions/enrolledcourses/:id', auth, async(req,res)=>{
-    console.log('hello')
+
     _id=req.params.id
-    console.log(_id)
     try
     {    
         const Data = await studentData.findById(req.user.studentData).populate([
@@ -66,7 +63,7 @@ router.get('/sessions/enrolledcourses/:id', auth, async(req,res)=>{
             }
         ])
 
-        console.log(Data)
+        
        const list = Data.semesterList.filter((obj)=>
        {
         if(obj.Session._id.toString()==_id.toString()){
@@ -74,16 +71,16 @@ router.get('/sessions/enrolledcourses/:id', auth, async(req,res)=>{
         }
        })
 
-        //console.log(list)
+        
         list2= list[0].courses.map((row)=>{
             return{'_id':row._id,'name':row.name,'creditHours':row.creditHours}
         })
-        //console.log(list2)
+        
         res.send(list2)
     }
     catch(e)
     {
-        console.log(e.message)
+       
         res.sendStatus(404)
     }
 })
@@ -91,7 +88,7 @@ router.get('/sessions/enrolledcourses/:id', auth, async(req,res)=>{
 //Return student data by id
 router.get('/:id', auth,authrole('admin'),async(req,res)=>{
     const _id = req.params.id 
-    console.log( _id)
+   
     
     try{
         const user = await User.findById(_id).populate('studentData')
@@ -103,14 +100,14 @@ router.get('/:id', auth,authrole('admin'),async(req,res)=>{
     }
     catch(e)
     {
-        console.log(req.params)
+        res.status(404).send()
     }
 })
 
 //Admin can access student's enrollment history (all session)
 router.get('/enrollhistory/sessions/:id',auth,authrole('admin'),async(req,res)=>{
     const _id = req.params.id
-    console.log(_id)//user id of the student
+    
     try{
         const stdData=await User.findById(_id).populate([
             {path:'studentData',populate:{
@@ -133,7 +130,7 @@ router.get('/enrollhistory/sessions/:id',auth,authrole('admin'),async(req,res)=>
         res.send(list)
     }
     catch(e){
-        console.log(e.message)
+        
         res.sendStatus(404)
     }
 })
@@ -142,7 +139,7 @@ router.get('/enrollhistory/courses/:sessionid/:userid',auth,authrole("admin"),as
 
     const _id = req.params.sessionid
     const st= req.params.userid
-    console.log(_id) //session id to get its courses
+    
 
     try{
         const stdData=await User.findById(st).populate([
@@ -166,30 +163,25 @@ router.get('/enrollhistory/courses/:sessionid/:userid',auth,authrole("admin"),as
             },
         ])
         
-        console.log(stdData.studentData)
+        
         const list = stdData.studentData.semesterList.filter((obj)=>
         {
-            console.log(obj)
+            
          if(obj.Session._id.toString() === _id.toString()){
              return true
          }
         })
 
-        console.log(list)
 
         const list2= list[0].courses.map((row)=>{
             return{'_id':row._id,'name':row.name,'creditHours':row.creditHours}
         })
         
-         console.log(list2)
         res.send(list2)
 
-        // console.log(list)
-        // res.send(stdData)
     }
     catch(e)
     {
-        console.log(e)
         res.send(404)
     }
 })
@@ -204,7 +196,6 @@ router.patch('/update/:id',auth,authrole("admin"),async(req,res)=>{
     catch(e)
     {
     res.status(404).send()
-    console.log("Data can't be updated")
     }      
 })
 

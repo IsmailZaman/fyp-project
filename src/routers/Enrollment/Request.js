@@ -26,7 +26,6 @@ router.get('/number', auth, authrole(['advisor']), async(req,res)=>{
         const activeSession = await Session.findOne({"status": true})
         if(!activeSession) throw new Error('active session not foundddd')
 
-        //console.log('advisor', advisorInfo.sessionList[0])
 
 
        
@@ -42,7 +41,6 @@ router.get('/number', auth, authrole(['advisor']), async(req,res)=>{
         }
 
         const batchRequests = await Request.find({batch: {$in: searchArray}, session: activeSession?.name})
-        console.log(batchRequests)
 
         if(!batchRequests) throw new Error('Batch requests not found')
 
@@ -60,7 +58,6 @@ router.get('/number', auth, authrole(['advisor']), async(req,res)=>{
         res.send(returnObject)
 
     }catch(e){
-        console.log(e)
         res.status(404).send(e.message)
     }
 
@@ -76,7 +73,6 @@ router.get('/unresolved', auth, authrole('admin'), async(req,res)=>{
 
         const pendingRequests = await Request.find({session: activeSession.name, closed: false})
         if(!pendingRequests) throw new Error('No requests found.')
-        console.log(pendingRequests.length)
 
         res.status(200).send(String(pendingRequests.length))
 
@@ -96,7 +92,6 @@ router.get('/piechart', auth, authrole('admin'), async(req,res)=>{
             return request.closed === false
         })
         if(!totalRequests) throw new Error('No requests found.')
-        console.log(pendingRequests.length)
 
         res.status(200).send({
             pending: pendingRequests?.length,
@@ -161,7 +156,6 @@ router.patch('/drop', auth, async(req,res)=>{
 
         //If the student has already been enrolled.
         if(enrolledCourse != ''){
-            console.log('hello id', enrolledCourse)
             //First we need to find the offered course itself so we can update it. 
             const courseToDrop = await offeredCourse.findById(enrolledCourse)
             if(!courseToDrop) throw new Error('course not found')
@@ -287,7 +281,7 @@ router.post('/create', auth,async(req,res)=>{
 
 
     }catch(e){
-        console.log(e.message)
+       
         res.status(400).send(e.message)
     }
 
@@ -353,8 +347,6 @@ router.get('/',auth,async(req,res)=>{
         if(!request){
             throw new Error('No request not found!')
         }
-        console.log(request.student)
-        console.log(id)
         if(request.student?.toString() != id?.toString()) throw new Error('No requests found.')
         res.send(request)
 

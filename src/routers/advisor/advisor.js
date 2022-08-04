@@ -138,9 +138,9 @@ router.get('/student/requests/:advisorid', auth, authrole(['admin']), async(req,
         if(batchesAdvising.size <= 0 ) throw new Error('No batches found.')
 
         const searchArray = batchesAdvising[0]?.batch?.map((batchData)=>batchData.name)
-        console.log(searchArray)
+        
         let students = await Request.find({batch: {$in: searchArray}, session: activeSession?.name, closed: 'false'}).populate('student')
-        console.log(students)
+       
 
         if(students.length < 0)throw new Error('students not found.')
 
@@ -161,7 +161,6 @@ router.get('/student/requests/:advisorid', auth, authrole(['admin']), async(req,
         res.send(students)
 
     }catch(e){
-        console.log(e)
         res.status(404).send(e.message)
     }
 
@@ -194,7 +193,6 @@ router.get('/',auth,authrole('admin') ,async(req,res)=>{
 //get advisor by id
 router.get('/:id', auth,authrole('admin'),async(req,res)=>{
     const _id = req.params.id 
-    console.log( _id)
     
     try{
         const user = await User.findById(_id).populate('advisorData')
@@ -206,7 +204,7 @@ router.get('/:id', auth,authrole('admin'),async(req,res)=>{
     }
     catch(e)
     {
-        console.log(req.params)
+        res.status()
     }
    
 })
@@ -254,7 +252,6 @@ router.patch('/assign/:id',auth,authrole('admin'),async(req,res)=>{
         })
 
         if(createNewSession){
-            console.log('created new Session')
             advisorInfo['sessionList'].push({
                 batch: [batch._id],
                 Session: currentSession._id

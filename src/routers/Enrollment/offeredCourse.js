@@ -26,7 +26,6 @@ router.post('/',auth,authrole('admin'), async(req,res)=>{
     
     //Validating the course name
     try{
-        console.log(newCourse)
         const courseVerify = await courseData.findOne({"name": newCourse.name})
        
         if(!courseVerify){
@@ -63,7 +62,6 @@ router.post('/',auth,authrole('admin'), async(req,res)=>{
 
 
     }catch(e){
-        console.log(e)
         res.status(404).send()
     }
 
@@ -74,7 +72,6 @@ router.post('/',auth,authrole('admin'), async(req,res)=>{
 
 router.post('/add',auth,authrole('admin'), async(req,res)=>{
     const courses = req.body.courses
-    console.log(courses)
 
     async function addNewCourses(courseList){
         let coursesAdded = 0
@@ -122,7 +119,6 @@ router.post('/add',auth,authrole('admin'), async(req,res)=>{
         
 
     }catch(e){
-        console.log(e.message)
         res.status(400).send(e.message)
     }
 
@@ -138,13 +134,11 @@ router.delete('/',auth, authrole('admin'), async(req,res)=>{
         if(!deleteCourse){
             throw new Error("Course not found")
         }   
-        console.log(deleteCourse)
+        
 
         //Delete the references from the session list of courses.
         const courseSession = await Session.findOne({"name": deleteCourse.Session})
 
-        console.log(deleteCourse._id)
-        console.log(courseSession.coursesOffered)
 
         //FIND THE COURSE AND DELETE IT FROM COURSES OFFERED LIST
         let newCourseArr = courseSession.coursesOffered.filter((value)=>!deleteCourse._id.equals(value))
@@ -156,7 +150,6 @@ router.delete('/',auth, authrole('admin'), async(req,res)=>{
 
         await deleteCourse.delete()
 
-        console.log("Deleted")
         res.send("DELETED")
     }catch(e){
         res.status(404).send(e)
@@ -189,7 +182,7 @@ router.post('/enroll', auth, async(req,res)=>{
         
         let deadline = new Date(activeSession.enrollmentPeriod)
         if(today.getTime() > deadline.getTime()){
-            console.log("Bro you're late")
+           
         }
 
         //Course check: Check if the course is offered. If it is, then enroll the student
@@ -204,7 +197,6 @@ router.post('/enroll', auth, async(req,res)=>{
                 else{
                     course["enrolledStudents"].push(student._id)
                     newCourse = await course.save()
-                    console.log(course)
                     break
                 }
                 
@@ -224,7 +216,6 @@ router.post('/enroll', auth, async(req,res)=>{
             throw new Error("Unable to find student data")
         }
 
-        console.log("reached here")
         
         // 1) Student already has a new semester object which is active currently and it matches our session.
         // 2) Student does not have a new semester object but we need to create one.
@@ -237,7 +228,6 @@ router.post('/enroll', auth, async(req,res)=>{
         
         for(sem of student.semesterList){
             if(sem.Session === activeSession.name){
-                console.log("Found semester")
 
                 sem.courses.push(course._id)
                 await sem.save()
@@ -246,7 +236,6 @@ router.post('/enroll', auth, async(req,res)=>{
         }
 
         if(!foundSemester){
-            console.log("not found semester")
 
             const newSemester = new studentSemester({
                 "studentData": student._id,
@@ -265,7 +254,6 @@ router.post('/enroll', auth, async(req,res)=>{
 
 
     }catch(e){
-        console.log(e)
         res.status(404).send()
     }
 
@@ -306,7 +294,6 @@ router.get('/active', auth, async(req,res)=>{
         }
         res.send(courses)
     }catch(e){
-        console.log(e)
         res.status(404).send('Courses not found')
     }
 })
@@ -333,10 +320,10 @@ router.get('/addcoursepage', auth, authrole('admin'),async(req,res)=>{
             flag=true
             for(let j=0; j<session.coursesOffered.length;j++)
             {
-                console.log(session.coursesOffered[j].data)
+                
                 if(courses[i]._id.toString() === session.coursesOffered[j].data.toString()){
                     flag=false
-                    console.log("found")
+                    
                     break
                 }
             }
@@ -353,13 +340,13 @@ router.get('/addcoursepage', auth, authrole('admin'),async(req,res)=>{
 
         })
         
-        //console.log()
+        
         res.send(list)
         
     }
     catch(e)
     {
-        console.log(e.message)
+        
         res.status(400).send(e.message)
 
     }
@@ -430,7 +417,7 @@ const compare = function(a,b){
 
 router.get('/barchart/:id', auth, authrole('admin'), async(req,res)=>{
     try{
-        console.log('hello')
+        
         const activeSession = await Session.findOne({status: true}).populate({
             path: 'coursesOffered',
             populate: {
@@ -456,7 +443,6 @@ router.get('/barchart/:id', auth, authrole('admin'), async(req,res)=>{
         res.send(courses)
 
     }catch(e){
-        console.log(e.message)
         res.status(400).send(e.message)
     }
 

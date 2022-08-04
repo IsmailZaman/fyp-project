@@ -38,7 +38,7 @@ router.post('/users/login',async(req,res)=>{
     
     try{
         const user = await User.findByCredentials(req.body.email, req.body.password)
-        console.log(user)
+       
         if(user.tokens.length > 10){
             user.tokens = []
         }
@@ -48,7 +48,6 @@ router.post('/users/login',async(req,res)=>{
         res.json({accessToken,user})
 
     }catch(e){
-        console.log(e.message)
         res.status(400).send()
     }
 })
@@ -124,8 +123,6 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
         studentDataList.push(student)
         emailList.push(`${prefix}${parseInt(initial)+i}@itu.edu.pk`)
     }
-    console.log('prefix', prefix, 'initial', initial)
-    console.log(emailList)
     
     try{
         const users = await User.insertMany(studentList)
@@ -141,16 +138,12 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
                 subject: 'ITU STUDENT PORTAL ACCESS',
                 text: `Dear Student, \n your account has just been created on studentportal.com. Following are your credintials: \n Email: ${emailList[i]} \n Password: ${passwords[i]}`
             };
-            console.log('sending email')
-            console.log(mail)
             emailSent = await sgMail.send(mail)
-            console.log(emailSent)
         }
         
         res.status(201).send("created " + (range + 1) + " students")
 
     }catch(e){
-        console.log(e.message)
         res.status(400).send('Unable to add Students')
     }
 
@@ -200,7 +193,6 @@ router.get('/users/me',auth,async(req,res)=>{
 
 //Create advisor
 router.post('/users/advisor', auth,authrole('admin'), async(req,res)=>{
-    console.log("hello")
     const email = req.body.email
     const password = req.body.password
     const name = req.body.name
@@ -223,7 +215,6 @@ router.post('/users/advisor', auth,authrole('admin'), async(req,res)=>{
         await notification.save()
         await newAdvisorData.save()
         await newUser.save()
-        console.log('hello jee')
         res.status(201).send(`${newUser.name} added as advisor`)
     }catch(e){
         res.status(400).send(e.message ? e.message : 'Unable to add advisor' )
@@ -246,7 +237,6 @@ router.get('/users',auth,authrole("admin"),async(req,res)=>{
 
 //Logs out a user, irrespective of his role
 router.post('/users/logout', auth, async(req,res)=>{
-    console.log("Entered Logout")
     const cookies = req.cookies
     if(!cookies?.jwt){
         return res.sendStatus(204) //no content to send
@@ -289,7 +279,6 @@ router.post('/users/logoutall',auth,async(req,res)=>{
 //Student can change their passwords while logged in
 router.patch('/users/changepassword',auth,async(req,res)=>{
     const _id = req.user._id
-    console.log(req.body)
     try{
         
         if(req.body.oldPassword !== req.user.password){
@@ -322,7 +311,6 @@ router.patch('/users/updateStudentData',auth,authrole("admin"),async(req,res)=>{
     catch(e)
     {
     res.status(404).send()
-    console.log("Data can't be changed")
     }      
 })
 
@@ -336,16 +324,15 @@ router.delete('/users/deleteUser',auth,authrole("admin"),async(req,res)=>
             throw new Error("User not found")
         }
         const deletedUser = await User.findByIdAndDelete(user._id)
-        console.log(deletedUser)
+        
         const deleteUserData = await studentData.findByIdAndDelete(deletedUser.studentData)
-        console.log(deleteUserData)
+
 
         res.send("Deleted")
     }
     catch(e)
     {
         res.status(404).send()
-        console.log("User can't be deleted")
     }
 })
 
