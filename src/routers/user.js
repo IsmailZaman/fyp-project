@@ -7,6 +7,9 @@ const generator = require('generate-password')
 const mailTransport = require('../mailer/mailer')
 const advisorData = require('../models/advisor/advisor')
 const Notifications = require('../models/Notification/Notification')
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+
 
 
 //Registration requests here. A token is generated on registration
@@ -119,33 +122,35 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
 
         studentList.push(newUser)
         studentDataList.push(student)
-        emailList.push(`${prefix}${initial+i}@itu.edu.pk`)
+        emailList.push(`${prefix}${parseInt(initial)+i}@itu.edu.pk`)
     }
-
+    console.log('prefix', prefix, 'initial', initial)
+    console.log(emailList)
     
     try{
         const users = await User.insertMany(studentList)
         await studentData.insertMany(studentDataList)
+        
+
+        let emailSent = ''
+        
+        for(let i=0;i<emailList.length;i++){
+            const mail = {
+                from: 'bscs18009@itu.edu.pk',
+                to: emailList[i],
+                subject: 'ITU STUDENT PORTAL ACCESS',
+                text: `Dear Student, \n your account has just been created on studentportal.com. Following are your credintials: \n Email: ${emailList[i]} \n Password: ${passwords[i]}`
+            };
+            console.log('sending email')
+            console.log(mail)
+            emailSent = await sgMail.send(mail)
+            console.log(emailSent)
+        }
+        
         res.status(201).send("created " + (range + 1) + " students")
-        
-        // for(let i=0;i<emailList.length;i++){
-        //     const mail = {
-        //         from: process.env.MAILER_EMAIL,
-        //         to: emailList[i],
-        //         subject: 'ITU STUDENT PORTAL ACCESS',
-        //         text: `Dear Student, \n your account has just been created on studentportal.com. Following are your credintials: \n Email: ${emailList[i]} \n Password: ${passwords[i]}`
-        //     };
-        //     console.log("Hello")
-        //     await mailTransport.sendMail(mail)
-        // }
-
-
-
-        
-
 
     }catch(e){
-        console.log(e)
+        console.log(e.message)
         res.status(400).send('Unable to add Students')
     }
 

@@ -182,7 +182,7 @@ router.patch('/drop', auth, async(req,res)=>{
             today.setHours(today.getHours() + 5)
             session.enrollmentPeriod = new Date(session?.enrollmentPeriod)
             if(session.enrollmentPeriod.getTime() < today.getTime()){
-                throw new Error('Cannot drop session, enrollment deadline has')
+                throw new Error('Cannot drop course, enrollment deadline has passed')
             }
 
             const student = await studentData.findById(req?.user?.studentData)

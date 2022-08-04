@@ -140,7 +140,23 @@ router.patch('/update', auth, authrole('admin'), async(req,res)=>{
 
 })
 
+//This request will return true if the deadline has passed else it will return false
+router.get('/deadline', auth, async(req,res)=>{
+    try{
+        const activeSession = await Session.findOne({'status': true})
+        if(!activeSession) throw new Error('session not found')
 
-
+        let deadlinePassed = false
+        let today = new Date()
+        today.setHours(today.getHours() + 5)
+        activeSession.enrollmentPeriod = new Date(activeSession?.enrollmentPeriod)
+        if(activeSession.enrollmentPeriod.getTime() < today.getTime()){
+                deadlinePassed = true
+        }
+        res.send(deadlinePassed)
+    }catch(e){
+        res.status(404).send(e.message)
+    }
+})
 
 module.exports = router
