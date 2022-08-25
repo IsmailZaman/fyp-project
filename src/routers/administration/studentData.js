@@ -3,6 +3,7 @@ const User = require('../../models/user')
 const studentData = require('../../models/student/studentData')
 const { listIndexes } = require('../../models/student/studentData')
 const Session = require('../../models/Enrollment/session')
+const courseData = require('../../models/administration/courseData')
 const auth = require('../../middleware/auth').auth
 const authrole = require('../../middleware/auth').authrole
 
@@ -84,6 +85,49 @@ router.get('/sessions/enrolledcourses/:id', auth, async(req,res)=>{
         res.sendStatus(404)
     }
 })
+
+//gets prereq data for one course for a student
+router.post('/prereqdata',auth, async(req,res)=>{
+    try{
+
+       let courses = await courseData.find({_id: req?.body})
+       courses = courses.map((course)=>{
+           return {id:course._id,
+             name: course.name}
+       })
+       if(!courses) throw new Error('Courses not found')
+
+        res.send(courses)
+
+    }catch(e){
+        res.status(404).send(e.message)
+    }
+
+})
+
+//het transcript for student id.
+router.get('/transcript/:id', auth, authrole(['advisor','admin']), async(req,res)=>{
+    const _id = req.params.id
+    try{
+        const student = await studentData.findById(_id).populate({
+            path: 'transcript',
+            populate: {
+                path: 'course'
+            }
+        })
+        if(!student){
+          throw new Error('transcript not found')
+       }
+
+       res.send(student.transcript)
+    }
+    catch(e)
+    {
+        res.status(404).send()
+    }
+
+})
+
 
 //Return student data by id
 router.get('/:id', auth,authrole('admin'),async(req,res)=>{

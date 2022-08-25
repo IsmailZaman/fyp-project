@@ -42,7 +42,19 @@ const studentSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    }
+    },
+    transcript: [
+        {
+            course: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'courseData'
+            },
+            grade: {
+                type: String,
+                default: 'NA'
+            }
+        }
+    ]
 })
 
 

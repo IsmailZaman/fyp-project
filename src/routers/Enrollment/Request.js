@@ -157,7 +157,7 @@ router.patch('/drop', auth, async(req,res)=>{
         //If the student has already been enrolled.
         if(enrolledCourse != ''){
             //First we need to find the offered course itself so we can update it. 
-            const courseToDrop = await offeredCourse.findById(enrolledCourse)
+            const courseToDrop = await offeredCourse.findById(enrolledCourse).populate('data')
             if(!courseToDrop) throw new Error('course not found')
             
             courseToDrop.enrolledStudents = courseToDrop.enrolledStudents.filter((student)=>{
@@ -189,6 +189,8 @@ router.patch('/drop', auth, async(req,res)=>{
                     semester.courses = semester.courses.filter(course=> course._id.toString() !== courseToDrop._id.toString())
                 }
             })
+
+            student.transcript = student.transcript.filter((data)=> data.course.toString() !== courseToDrop.data._id.toString())
 
             
             await student.save()

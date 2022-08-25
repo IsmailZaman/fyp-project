@@ -22,7 +22,12 @@ const courseDataSchema = new mongoose.Schema({
     department:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Department'
-    }
+    },
+    prereqs: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'courseData',
+        default: []
+    }]
 },{timestamps: true})
 
 

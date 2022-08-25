@@ -11,11 +11,6 @@ const auth = require('../../middleware/auth').auth
 const authrole = require('../../middleware/auth').authrole
 
 
-router.get('/', auth,async(req,res)=>{
-    
-})
-
-
 
 //enrol student into offered courses in the current session
 
@@ -34,7 +29,7 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
             return semester.Session.toString() === activeSession._id.toString()
         })
 
-
+        console.log(req.body.courses[0].course.data)
 
         let coursesToEnroll = req.body.courses.filter((course)=>{
             return course.status === 'Approved'})
@@ -58,6 +53,12 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
             }
 
             student['semesterList'].push(newSemester)
+            req.body.courses.forEach((course)=>{
+                student['transcript'].push({
+                    course: course.course.data._id,
+                    grade: 'NA'
+                })
+            })
         }
         else{
             let isNew = false
@@ -71,7 +72,12 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
                 }
                 if(isNew){
                     enrolledCourses.push(coursesToEnroll[i])
+                    student['transcript'].push({
+                        course: coursesToEnroll[i].data._id,
+                        grade: 'NA'
+                    })
                     currentSemester[0].courses.push(coursesToEnroll[i])
+
                 }
 
             }
@@ -122,7 +128,7 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
 
 
         
-        
+        console.log(student)
         
         await student.save()
         await request.save()

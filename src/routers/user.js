@@ -110,6 +110,7 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
             password: passwords[i]
         })
         student["userId"] = newUser._id
+        student["transcript"] = []
         notification['userId'] = newUser._id
         
 
@@ -129,17 +130,17 @@ router.post('/users/students', auth, authrole("admin"), async(req,res)=>{
         await studentData.insertMany(studentDataList)
         
 
-        let emailSent = ''
+        // let emailSent = ''
         
-        for(let i=0;i<emailList.length;i++){
-            const mail = {
-                from: 'bscs18009@itu.edu.pk',
-                to: emailList[i],
-                subject: 'ITU STUDENT PORTAL ACCESS',
-                text: `Dear Student, \n your account has just been created on studentportal.com. Following are your credintials: \n Email: ${emailList[i]} \n Password: ${passwords[i]}`
-            };
-            emailSent = await sgMail.send(mail)
-        }
+        // for(let i=0;i<emailList.length;i++){
+        //     const mail = {
+        //         from: 'bscs18009@itu.edu.pk',
+        //         to: emailList[i],
+        //         subject: 'ITU STUDENT PORTAL ACCESS',
+        //         text: `Dear Student, \n your account has just been created on studentportal.com. Following are your credintials: \n Email: ${emailList[i]} \n Password: ${passwords[i]}`
+        //     };
+        //     emailSent = await sgMail.send(mail)
+        // }
         
         res.status(201).send("created " + (range + 1) + " students")
 

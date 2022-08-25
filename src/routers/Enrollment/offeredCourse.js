@@ -13,6 +13,7 @@ const Request = require('../../models/Enrollment/Request')
 
 
 
+
 //Creates a new offeredCourse. The offered course must have a valid session and should already exsist in the courseData table
 
 router.post('/',auth,authrole('admin'), async(req,res)=>{
@@ -157,107 +158,6 @@ router.delete('/',auth, authrole('admin'), async(req,res)=>{
 })
 
 
-//Course Enrollment
-//When a student sends request to this link, we check if we have an active session. If we have one, we will create
-//a new semester for student and enroll him. 
-router.post('/enroll', auth, async(req,res)=>{
-   
-
-    let newCourse=""
-    let courseFound = false
-    const studentUser = await User.findById(req.user._id) //contains the user credintials etc
-    const student = await studentData.findById(studentUser.studentData).populate('semesterList').exec() // contains the student data
-
-
-    try{
-        //session check
-        const activeSession = await Session.findOne({"status": true}).populate('coursesOffered')
-        
-        
-        //Check if the active session is within deadline
-        if(!activeSession){
-            res.status(404).send("Course not found")
-        }
-        let today = new Date()
-        
-        let deadline = new Date(activeSession.enrollmentPeriod)
-        if(today.getTime() > deadline.getTime()){
-           
-        }
-
-        //Course check: Check if the course is offered. If it is, then enroll the student
-
-        for(course of activeSession.coursesOffered){
-            if(course["name"] === req.body.name){
-                courseFound = true
-
-                if(course["enrolledStudents"].includes(student._id)){
-                    throw new Error("Already enrolled");
-                }
-                else{
-                    course["enrolledStudents"].push(student._id)
-                    newCourse = await course.save()
-                    break
-                }
-                
-            }
-            
-        }
-
-        if(!courseFound){
-            throw new Error("Course does not exist")
-        }
-
-        //Enroll the student in the course if all the checks are passed
-
-        //Add enrollment info in student's data too
-        
-        if(!student){
-            throw new Error("Unable to find student data")
-        }
-
-        
-        // 1) Student already has a new semester object which is active currently and it matches our session.
-        // 2) Student does not have a new semester object but we need to create one.
-        // 3) Student does not have any semester object. 
-        
-
-        //1 check
-        let foundSemester = false
-
-        
-        for(sem of student.semesterList){
-            if(sem.Session === activeSession.name){
-
-                sem.courses.push(course._id)
-                await sem.save()
-                foundSemester = true
-            }
-        }
-
-        if(!foundSemester){
-
-            const newSemester = new studentSemester({
-                "studentData": student._id,
-                "Session": activeSession.name,
-                "active":true
-            })
-            newSemester.courses.push(course._id)
-            await newSemester.save()
-            student.semesterList.push(newSemester)
-            await student.save()
-        
-        
-        }
-
-        res.send("Successfully enrolled")
-
-
-    }catch(e){
-        res.status(404).send()
-    }
-
-})
 
 
 router.get('/', auth,async(req,res)=>{
@@ -356,6 +256,9 @@ router.get('/addcoursepage', auth, authrole('admin'),async(req,res)=>{
 router.get('/enrollment', auth, authrole('student'),async(req,res)=>{
     try{
 
+        const data = await studentData.findById(req.user.studentData)
+        if(!data) throw new Error('student data not found')
+
         const activeSession = await Session.findOne({"status": true})
         if(!activeSession){
             throw new Error("Session not found")
@@ -363,12 +266,14 @@ router.get('/enrollment', auth, authrole('student'),async(req,res)=>{
         
         const courses = await offeredCourse.find({Session: activeSession._id}).populate([{
             path: 'data',
-            populate: {
-                path: 'department'
-            }},
+            populate: [
+                {path: 'department'},
+                // {path: 'prereqs'}
+
+            ]},
             {
                 path: 'Session'
-            }
+            },
         ])
 
         const existingRequest = await Request.findOne({student: req.user.studentData, session: activeSession.name}).populate({
@@ -399,11 +304,24 @@ router.get('/enrollment', auth, authrole('student'),async(req,res)=>{
         
         if(!existingRequest)filteredCourses = courses
         
-        res.send(filteredCourses)
+
+        filteredCourses = filteredCourses.map((course)=> {
+            return {
+                _id: course._id,
+                name: course.name,
+                department: course?.data?.department.name,
+                creditHours: course.creditHours,
+                prereqs: course?.data?.prereqs,
+                dataId: course?.data?._id
+            }
+        })
+
+        res.send({filteredCourses, transcript: data.transcript})
         
     
 
     }catch(e){
+        console.log(e.message)
         res.status(404).send('Courses not found')
     }
 

@@ -37,7 +37,10 @@ router.get('/',auth,authrole('admin'),async(req,res)=>{
 
     try
     {
-       const course =  await courseData.find({}).populate('department')
+       const course =  await courseData.find({}).populate([
+           {path: 'department'},
+           {path: 'prereqs'}
+       ])
        if(!course){
         throw new Error("Course not found")
          }
@@ -45,9 +48,57 @@ router.get('/',auth,authrole('admin'),async(req,res)=>{
     }
     catch(e)
     {
-        res.status(404).send(e)
+        res.status(404).send(e.message)
     }
 
+})
+
+//Previously written working code.
+
+// router.post('/addprereq/:id', auth, authrole('admin'), async(req,res)=>{
+//     try{   
+//         let course = await courseData.findById(req.params.id)
+//         if(!course) throw new Error('Course not found');
+//         let count = 0
+//         let shouldAdd = true
+        
+//         for(let i = 0; i<req.body.length; i++){
+//             shouldAdd = true
+//             for(let j = 0; j<course.prereqs.length; j++){
+//                 if(req.body[i].toString() === course.prereqs[j].toString() || req.body[i].toString() === course._id){
+//                     shouldAdd = false
+//                 }
+//             }
+//             if(shouldAdd){
+//                 course.prereqs.push(req.body[i])
+//                 count +=1
+//             }
+//         }
+//         await course.save()
+//         res.send(`Added ${count} prerequisites for ${course.name}`)
+
+//     }catch(e){
+//         console.log(e.message)
+//         res.status(400).send(e)
+//     }
+// })
+
+
+router.post('/addprereq/:id', auth, authrole('admin'), async(req,res)=>{
+    try{   
+        let course = await courseData.findById(req.params.id)
+        if(!course) throw new Error('Course not found');
+        course.prereqs = req?.body
+
+        console.log(course)
+
+        await course.save()
+        res.send(`Updated prerequisites for ${course.name}`)
+
+    }catch(e){
+        console.log(e.message)
+        res.status(400).send(e)
+    }
 })
 
 
