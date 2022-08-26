@@ -321,7 +321,6 @@ router.get('/enrollment', auth, authrole('student'),async(req,res)=>{
     
 
     }catch(e){
-        console.log(e.message)
         res.status(404).send('Courses not found')
     }
 
