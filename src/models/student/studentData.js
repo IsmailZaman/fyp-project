@@ -52,6 +52,9 @@ const studentSchema = new mongoose.Schema({
             grade: {
                 type: String,
                 default: 'NA'
+            },
+            session: {
+                type: String
             }
         }
     ]

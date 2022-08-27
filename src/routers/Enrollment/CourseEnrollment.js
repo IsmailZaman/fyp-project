@@ -29,7 +29,6 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
             return semester.Session.toString() === activeSession._id.toString()
         })
 
-        console.log(req.body.courses[0].course.data)
 
         let coursesToEnroll = req.body.courses.filter((course)=>{
             return course.status === 'Approved'})
@@ -56,7 +55,8 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
             req.body.courses.forEach((course)=>{
                 student['transcript'].push({
                     course: course.course.data._id,
-                    grade: 'NA'
+                    grade: 'NA',
+                    session: activeSession.name
                 })
             })
         }
@@ -74,7 +74,8 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
                     enrolledCourses.push(coursesToEnroll[i])
                     student['transcript'].push({
                         course: coursesToEnroll[i].data._id,
-                        grade: 'NA'
+                        grade: 'NA',
+                        session: activeSession.name
                     })
                     currentSemester[0].courses.push(coursesToEnroll[i])
 
@@ -127,8 +128,6 @@ router.post('/enroll', auth,authrole('advisor'),async(req,res)=>{
         if(closeRequest) request.closed = true
 
 
-        
-        console.log(student)
         
         await student.save()
         await request.save()

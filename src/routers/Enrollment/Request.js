@@ -290,7 +290,7 @@ router.post('/create', auth,async(req,res)=>{
 })
 
 //get all pre requisites for a request course
-router.post('/prereq/:id', auth, authrole(['advisor']), async(req,res)=>{
+router.post('/prereq/:id/:courseid', auth, authrole(['advisor']), async(req,res)=>{
     try{
         const student = await studentData.findById(req.params.id).populate({
             path: 'transcript',
@@ -299,20 +299,28 @@ router.post('/prereq/:id', auth, authrole(['advisor']), async(req,res)=>{
             }
         })
         if(!student) throw new Error('student not found')
+        let courseHistory = []
         let results = student?.transcript.filter(course=>{
             if(req.body.includes(course.course._id.toString())){
                 return true
+            }
+            if(req.params.courseid === course.course._id.toString()){
+                courseHistory.push({
+                    name: course.course.name,
+                    grade: course.grade,
+                    session: course?.session
+                })
             }
         })
 
         results = results.map((data)=>{
             return {
                 name: data?.course?.name,
-                grade: data?.grade
+                grade: data?.grade,
+                session: data?.session
             }
         })
-
-        res.send(results)
+        res.send({results, courseHistory})
     }catch(e){
         res.send(e.message)
     }

@@ -90,13 +90,11 @@ router.post('/addprereq/:id', auth, authrole('admin'), async(req,res)=>{
         if(!course) throw new Error('Course not found');
         course.prereqs = req?.body
 
-        console.log(course)
 
         await course.save()
         res.send(`Updated prerequisites for ${course.name}`)
 
     }catch(e){
-        console.log(e.message)
         res.status(400).send(e)
     }
 })
